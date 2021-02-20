@@ -1,0 +1,94 @@
+{% extends "upload/project/base.html" %}
+
+{% block title %}{{sample.name}} - Sample - {{project_obj.name}} - Project{% endblock %}
+
+{% block project %}
+<section class="dataset-metadata">
+  <header>
+    <h2>
+      {{sample.name}} <small>Sample Data</small>
+      {% if allow_edit %}
+        <a class="btn btn-default" href="{% url 'edit_sample' project_obj.id sample.id %}">Edit Sample</a>
+      {% endif %}
+    </h2>
+  </header>
+
+  <p>{{sample.description}}</p>
+
+  <dl>
+    <dt>Porous Media Type</dt>
+    <dd>
+      {% if sample.porous_media_type == 'OTHE' %}
+        {{ sample.porous_media_other_description|default:'Other' }}
+      {% else %}
+        {{ sample.get_porous_media_type_display }}
+      {% endif %}
+    </dd>
+
+    <dt>Source</dt>
+    <dd>{{ sample.get_source_display }}</dd>
+
+    <dt>Grain size</dt>
+    <dd>
+      <table>
+        <tbody>
+          <tr><td><i>minimum</i></td><td>{{ sample.grain_size_min|default:"n/a" }}</td></tr>
+          <tr><td><i>maximum</i></td><td>{{ sample.grain_size_max|default:"n/a" }}</td></tr>
+          <tr><td><i>average</i></td><td>{{ sample.grain_size_avg|default:"n/a" }}</td></tr>
+        </tbody>
+      </table>
+    </dd>
+
+    {% if sample.porosity %}
+    <dt>Porosity</dt>
+    <dd>{{ sample.porosity }}</dd>
+    {% endif %}
+
+    {% if sample.identifier %}
+    <dt>Identifier</dt>
+    <dd>{{ sample.identifier }}</dd>
+    {% endif %}
+
+    {% if sample.location %}
+    <dt>Location</dt>
+    <dd>{{ sample.location }}</dd>
+    {% endif %}
+  </dl>
+</section>
+
+<div class="row">
+  {% if sample.origin_data.count > 0 %}
+    <div class="col-md-6">
+      <section class="dataset-data origin-data">
+        <header>
+          <h3>Origin Data</h3>
+        </header>
+        <p>Origin datasets extracted from this sample.</p>
+
+        <ul>
+          {% for dataset in sample.origin_data.all %}
+            <li><a href="{% url 'origin_data_summary' dataset.project.id dataset.id %}">{{ dataset.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </section>
+    </div>
+  {% endif %}
+
+  {% if sample.analysis_data.count > 0 %}
+    <div class="col-md-6">
+      <section class="dataset-data analysis-data">
+        <header>
+          <h3>Analysis Data</h3>
+        </header>
+        <p>Analyses of this sample.</p>
+
+        <ul>
+          {% for dataset in sample.analysis_data.all %}
+            <li><a href="{% url 'analysis_data_summary' dataset.project.id dataset.id %}">{{ dataset.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </section>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% load upload_tags %}
+{% block title %}{{project_obj.name}} - Project{% endblock %}
+
+{% block main_content %}
+<div class="page-title">
+</div>
+<ul class="nav nav-tabs">
+  <li role="presentation" class="{% active_nav request 'view_project' project_id=project_obj.id%}">
+    <a href="{% url 'view_project' project_obj.id %}">Project</a>
+  </li>
+  {% if allow_edit %}
+    <li role="presentation" class="{% active_nav request 'edit_project' project_id=project_obj.id %}">
+      <a href="{% url 'edit_project' project_id=project_obj.id %}">Edit</a>
+    </li>
+    <li role="presentation" class="{% active_nav request 'project_add_dataset' project_id=project_obj.id %}">
+      <a href="{% url 'project_add_dataset' project_id=project_obj.id %}">Add Datasets</a>
+    </li>
+  {% endif %}
+</ul>
+<br>
+<div class="clearfix">
+  {% block project %}{% endblock %}
+</div>
+{% endblock %}

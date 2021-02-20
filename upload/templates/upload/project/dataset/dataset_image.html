@@ -1,0 +1,110 @@
+{% load upload_tags %}
+<div class="flex-col flex-col-4">
+  <div class="dataset-file" data-image-id="{{ image.id }}" style="text-align: center;">
+    {% if image.isNonImageFile %}
+        <img><i class="{% file_thumbnail image %}"></i></img>
+    {% else %}
+        <img src="{% upload_thumbnail image %}" async></img>
+    {% endif %}
+
+    <h4 title="{{ image.file_name }}">
+    {{ image.file_name }}
+    <br><small>{{ image.file_size|filesizeformat }}</small>
+    </h4>
+    {% if image.isAdvancedImageFile %}
+        {% with aimage=image.advanced_image %}
+        <div class="advanced-info">
+          <table class="table">
+            <tbody>
+              <tr>
+                <td> Image Type </td><td>{{aimage.image_type}}</td>
+              </tr>
+              <tr>
+                <td>Width </td><td>{{ aimage.width }}</td>
+              </tr>
+              <tr>
+                <td>Height </td><td>{{ aimage.height }}</td>
+              </tr>
+              <tr>
+                <td>Number of Slices </td><td>{{ aimage.numberOfImages }}</td>
+              </tr>
+              <tr>
+                <td>Byte Order </td><td>{{ aimage.byteOrder }} </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        {% endwith %}
+    {% endif %}
+
+    <div class="text-right">
+      <div class="btn-group">
+        <button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Action <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <a href="{% url 'download_dataset_image' project_id=project_obj.id image_id=image.id %}">
+              <i class="glyphicon glyphicon-download"></i> Download File
+            </a>
+          </li>
+
+          {% if image.has_gif %}
+          <li>
+            <a href="{{ image.file.url }}.gif">
+              <i class="glyphicon glyphicon-film"></i> View GIF
+            </a>
+          </li>
+          {% endif %}
+
+          {% if image.has_histogram %}
+          <li>
+            <a href="{{ image.file.url }}.histogram.jpg">
+              <i class="glyphicon glyphicon-stats"></i> Histogram
+            </a>
+          </li>
+          {% endif %}
+
+          {% if image.has_histogram_csv %}
+          <li>
+            <a href="{{ image.file.url }}.histogram.csv">
+              <i class="glyphicon glyphicon-list-alt"></i> Histogram (CSV)
+            </a>
+          </li>
+          {% endif %}
+
+          {% if image.has_meta %}
+          <li>
+            <a href="{% url 'download_datafile_metadata' project_id=project_obj.id file_id=image.id %}">
+              <i class="glyphicon glyphicon-paperclip"></i> Metadata
+            </a>
+          </li>
+          {% endif %}
+
+          {% if allow_edit %}
+          <li role="separator" class="divider"></li>
+          <li>
+            <a href="{% url 'edit_dataset_image' project_id=project_obj.id image_id=image.id %}">
+              <i class="glyphicon glyphicon-edit"></i> Edit
+            </a>
+          </li>
+          {% endif %}
+
+          {% if image.has_gif %}
+          <li role="separator" class="divider"></li>
+          <li>
+            <a href="{% url 'paraview_info_page' image_id=image.id %}">
+              <i class="glyphicon glyphicon-sunglasses"></i> View in Paraview
+            </a>
+          </li>
+          {% endif %}
+
+
+          {% comment %} if advanced image, then add button for openin paraview copy template for button above href will be a run in paraview page/view
+          maybe a info page on what they are about to do as caution. Prevent running unless you're logged in. Give status as to what is happening-django page
+          {% endcomment %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

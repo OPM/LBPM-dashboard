@@ -1,0 +1,51 @@
+{% extends "upload/project/base.html" %}
+
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+{% block title %} Edit Sample {{ sample.name }} - {{ project_obj.name }} {% endblock %}
+
+{% block project %}
+  <h2>{{ sample.name }} <small>Edit Sample Data</small></h2>
+
+  <div class="row">
+    <div class="col-md-3 col-md-push-9">
+      <!--
+      <div class="well well-sm">
+        <h3>Help text here.</h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc dignissim facilisis mi ut ultrices. Quisque dignissim arcu quis orci sagittis aliquam. Fusce interdum mauris eget velit mattis tempor. Aenean condimentum quam enim. Nullam a lectus sit amet tortor suscipit interdum. Curabitur laoreet euismod justo, a fermentum nunc laoreet sed. Phasellus pharetra nec nunc id hendrerit. Quisque ornare, purus et semper scelerisque, eros lacus ultrices metus, vitae fermentum quam lectus at nisi.
+        </p>
+      </div>
+      -->
+    </div>
+    <div class="col-md-9 col-md-pull-3">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% bootstrap_form form %}
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Save Sample Data</button>
+          <a href="{% url 'view_sample' sample.project.id sample.id %}" class="btn btn-link">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block javascript_block %}
+<script>
+(function(window, $, undefined) {
+  $('#id_porous_media_type').on('change', function() {
+    if (this.value === 'OTHE') {
+      $('#id_porous_media_other_description').parent().removeClass('hide');
+    } else {
+      $('#id_porous_media_other_description').parent().addClass('hide');
+    }
+  });
+  $('#id_porous_media_type').trigger('change');
+})(window, jQuery);
+</script>
+{% endblock %}

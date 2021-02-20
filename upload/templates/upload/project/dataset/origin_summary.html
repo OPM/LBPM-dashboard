@@ -1,0 +1,103 @@
+{% extends "upload/project/base.html" %}
+{% load bootstrap3 %}
+{% block title %}{{dataset.name}} - Origin Data - {{project_obj.name}} - Project{% endblock %}
+
+{% block project %}
+    <section class="dataset-metadata">
+        <header>
+            <h2>
+                {{dataset.name}} <small>Origin Data</small>
+                {% if allow_edit %}
+                    <a class="btn btn-default" href="{% url 'origin_data_edit' project_id=project_obj.id origin_data_id=dataset.id %}">Edit Dataset</a>
+                {% endif %}
+            </h2>
+        </header>
+
+        <p>{{dataset.provenance}}</p>
+
+        <dl>
+            <dt>Segmented</dt>
+            <dd>{% if dataset.is_segmented == 1 %}Yes{% else %}No{% endif %}</dd>
+
+            <dt>Voxel length (x, y, z)</dt>
+            <dd>
+                {{ dataset.voxel_x }}, {{ dataset.voxel_y }}, {{ dataset.voxel_z }}
+                {% if dataset.voxel_units == 'other' %}
+                    {{ dataset.voxel_other }}
+                {% else %}
+                    {{ dataset.voxel_units }}
+                {% endif %}
+            </dd>
+
+            {% if dataset.external_url %}
+                <dt>Links</dt>
+                <dd><a href="{{dataset.external_url}}">See more</a></dd>
+            {% endif %}
+            <dt>Sample</dt>
+            <dd>
+                {% if dataset.sample %}
+                    <a href="{% url 'view_sample' project_id=project_obj.id sample_id=dataset.sample.id%}">
+                        View Sample: {{dataset.sample}}
+                    </a>
+                {% else %}
+                    <p class="text-warning">
+                        <i class="glyphicon glyphicon-exclamation-sign"></i> No associated sample!
+                        <a class="" href="{% url 'add_sample' project_obj.id %}?origin_data_id={{ dataset.id }}">Add a new sample</a>
+                        or
+                        <a class="" href="{% url 'origin_data_edit' project_id=project_obj.id origin_data_id=dataset.id %}">associate existing sample</a>.
+                    </p>
+                {% endif %}
+            </dd>
+
+            {% if dataset.analysis_data.count > 0 %}
+                <dt>Analysis of this Data</dt>
+                <dd>
+                    <ul>
+                        {% for analysis in dataset.analysis_data.all %}
+                            <li><a href="{% url 'analysis_data_summary' project_id=project_obj.id analysis_data_id=analysis.id %}">{{analysis.name}}</a></li>
+                        {% endfor %}
+                    </ul>
+                </dd>
+            {% endif %}
+        </dl>
+    </section>
+    <hr>
+    <section class="dataset-data">
+        <header>
+            <h3>Data
+                {% if allow_edit %}
+                    <a href="{% url 'origin_data_image_upload' project_id=project_obj.id origin_data_id=dataset.id %}" class="btn btn-default">Upload Image Data</a>
+                    <a href="{% url 'origin_data_nonimage_upload' project_id=project_obj.id origin_data_id=dataset.id %}" class="btn btn-default">Upload Non-Image Data</a>
+                {% endif %}
+            </h3>
+        </header>
+
+        {% if not paginator.count %}
+            <div class="alert alert-warning">
+                <h4>No data!</h4>
+                <p>
+                    This data set does not have any associated files.
+                </p>
+                {% if allow_edit %}
+                <p>
+                    <a href="{% url 'origin_data_image_upload' project_id=project_obj.id origin_data_id=dataset.id %}" class="btn btn-primary">Upload Image Data</a>
+                    <a href="{% url 'origin_data_nonimage_upload' project_id=project_obj.id origin_data_id=dataset.id %}" class="btn btn-default">Upload Non-Image Data</a>
+                </p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="flex-row">
+            {% for image in images %}
+                {% include "upload/project/dataset/dataset_image.html" %}
+            {% endfor %}
+        </div>
+
+
+        {% if images.paginator.num_pages > 1 %}
+            <div class="text-center">
+                {% bootstrap_pagination images %}
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

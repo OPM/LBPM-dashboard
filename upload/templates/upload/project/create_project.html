@@ -1,0 +1,28 @@
+{% block title %} Create New Project {% endblock %}
+
+{% block main_content %}
+  <h1>Create a New Project</h1>
+
+  <div class="row">
+    <div class="col-md-3 col-md-push-9">
+      <!--
+      <div class="well well-sm">
+        <h3>Help text here.</h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc dignissim facilisis mi ut ultrices. Quisque dignissim arcu quis orci sagittis aliquam. Fusce interdum mauris eget velit mattis tempor. Aenean condimentum quam enim. Nullam a lectus sit amet tortor suscipit interdum. Curabitur laoreet euismod justo, a fermentum nunc laoreet sed. Phasellus pharetra nec nunc id hendrerit. Quisque ornare, purus et semper scelerisque, eros lacus ultrices metus, vitae fermentum quam lectus at nisi.
+        </p>
+      </div>
+      -->
+    </div>
+    <div class="col-md-9 col-md-pull-3">
+      <form id="addProjectForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form }}
+
+        <button type="submit" class="btn btn-primary">Create Project</button>
+        <a href="{% url 'my_projects' %}" class="btn btn-link">Cancel</a>
+      </form>
+    </div>
+  </div>
+
+{% endblock %}

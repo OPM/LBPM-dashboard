@@ -1,0 +1,103 @@
+{% extends 'upload/project/base.html' %}
+
+{% load bootstrap3 %}
+
+{% block title %}Add Dataset - {{project_obj.name}} - Project{% endblock %}
+
+{% block project %}
+  <h2>Add a new Dataset</h2>
+
+  <div class="row">
+    <div class="col-sm-3 col-sm-push-9">
+      <div class="well well-sm">
+        <h4>Dataset types</h4>
+        <p>
+          There are two types of datasets that can be added. Select the tab below of
+          the type of dataset you wish to add at this time.
+          <ul>
+            <li>
+              <b>Origin dataset</b>
+              <p>
+                An origin dataset contains data that has not been analyzed yet,
+                for example segmented data or data coming from direct imaging
+                processes, etc.
+              </p>
+            </li>
+            <li>
+              <b>Analysis dataset</b>
+              <p>
+                An analysis dataset contains results of analysis done on origin
+                data, for example simulation data.
+              </p>
+            </li>
+          </ul>
+        </p>
+      </div>
+    </div>
+    <div class="col-sm-9 col-sm-pull-3">
+      <ul class="nav nav-tabs nav-justified">
+        <li role="presentation" class="{% if submission_type == 'origin' %}active{% endif %}">
+          <a href="#origin-data" data-toggle="tab">
+            <b>Origin dataset</b>
+          </a>
+        </li>
+        <li role="presentation" class="{% if submission_type == 'analysis' %}active{% endif %}">
+          <a href="#analysis-data" data-toggle="tab">
+            <b>Analysis dataset</b>
+          </a>
+        </li>
+      </ul>
+      <br>
+      <div class="tab-content">
+        <div id="origin-data" class="tab-pane {% if submission_type == 'origin' %}active{% endif %}">
+          <form method="post">
+            {% csrf_token %}
+            <fieldset>
+              {% bootstrap_field origin_data_form.name %}
+              {% bootstrap_field origin_data_form.is_segmented %}
+              {% bootstrap_field origin_data_form.provenance %}
+              {% bootstrap_field origin_data_form.external_url %}
+            </fieldset>
+
+            <fieldset>
+              <legend>Voxel Length</legend>
+              <div class="row">
+                <div class="col-sm-2">
+                  {% bootstrap_field origin_data_form.voxel_x%}
+                </div>
+                <div class="col-sm-2">
+                  {% bootstrap_field origin_data_form.voxel_y%}
+                </div>
+                <div class="col-sm-2">
+                  {% bootstrap_field origin_data_form.voxel_z%}
+                </div>
+                <div class="col-sm-3">
+                  {% bootstrap_field origin_data_form.voxel_units%}
+                </div>
+                <div class="col-sm-3">
+                  {% bootstrap_field origin_data_form.voxel_other%}
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Associated Data</legend>
+              {% bootstrap_field origin_data_form.sample %}
+            </fieldset>
+            <input type="hidden" name="dataset_type" value="origin">
+            <button type="submit" class="btn btn-primary">Save Origin Dataset</button>
+          </form>
+        </div>
+
+        <div id="analysis-data" class="tab-pane {% if submission_type == 'analysis' %}active{% endif %}">
+          <form method="post">
+            {% csrf_token %}
+            {% bootstrap_form analysis_data_form %}
+            <input type="hidden" name="dataset_type" value="analysis">
+            <button type="submit" class="btn btn-primary">Save Analysis Dataset</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

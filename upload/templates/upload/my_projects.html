@@ -1,0 +1,42 @@
+{% extends "base_generic.html" %}
+
+{% block title %} My Projects {% endblock %}
+
+{% block main_content %}
+<div class="actions pull-right">
+    <a href="{% url 'create_project' %}" class="btn btn-success btn-lg"><i class="glyphicon glyphicon-plus-sign"></i> Create Project</a>
+</div>
+
+<div class="page-header">
+    <h1>My Projects</h1>
+</div>
+
+<div class="row">
+    {% for project in projects %}
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            {% include 'upload/project/project_thumbnail.html' %}
+        </div>
+    {% endfor %}
+
+    {% with collaborator=True %}
+        {% for project in collaboration_projects %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                {% include 'upload/project/project_thumbnail.html' %}
+            </div>
+        {% endfor %}
+    {% endwith %}
+</div>
+
+{% if projects|length_is:"0" and collaboration_projects|length_is:"0" %}
+    <div class="jumbotron">
+        <h1>Your first project.</h1>
+        <p>
+            It doesn't look like you've created a project yet, and you're not collaborating on any
+            projects others have created. Why don't you create your first project now?
+        </p>
+        <p>
+            <a href="{% url 'create_project' %}" class="btn btn-primary btn-lg">Get started on my First Project</a>
+        </p>
+    </div>
+{% endif %}
+{% endblock %}

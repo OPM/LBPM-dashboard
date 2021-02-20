@@ -1,0 +1,174 @@
+{% extends 'upload/project/base.html' %}
+{% load static %}
+
+{% block project %}
+<meta name="citation_title" content="{{ project_obj.name }}">
+<meta name="citation_author" content="{{project_obj.user.full_name}}">
+<meta name="citation_publication_date" content="{{project_obj.creation_date}}">
+  <div class="row">
+    <div class="col-md-8">
+      <section class="clearfix">
+        {% if project_obj.cover_pic %}
+        <div class="pull-left project-cover-image">
+          <div class="">
+            <img src="{{ project_obj.cover_pic.url }}" alt="Project Cover Image" class="img-responsive">
+          </div>
+        </div>
+        {% endif %}
+
+        <h3>Description</h3>
+        <p class="project-description">{{ project_obj.description }} </p>
+      </section>
+
+      <section>
+        <h3>Datasets</h3>
+        {% if project_obj.samples.count == 0 and project_obj.origin_data.count == 0 and project_obj.analysis_data.count == 0 %}
+          <div class="alert alert-info">
+            <h4>This project has no datasets!</h4>
+            <p>
+              This project does not have any datasets! You can create a dataset
+              and upload data on the <a href="{% url 'project_add_dataset' project_id=project_obj.id %}">Add Datasets</a> tab.
+            </p>
+            <p>
+              <a class="btn btn-primary" href="{% url 'project_add_dataset' project_id=project_obj.id %}">Add Datasets</a>
+            </p>
+          </div>
+        {% else %}
+          <div class="tree">
+            <ul>
+              {% for sample in project_obj.samples.all %}
+              <li>
+                <a href="{% url 'view_sample' project_obj.id sample.id %}">
+                  <span class="label label-default">Sample</span>
+                  {{ sample.name }}
+                </a>
+                <!-- datasets from this sample -->
+                <ul>
+                  {% if sample.origin_data.count > 0 or sample.analysis_data.count > 0 %}
+                    <!-- origin datasets -->
+                    {% for origin_data in sample.origin_data.all %}
+                      <li>
+                        <a href="{% url 'origin_data_summary' project_obj.id origin_data.id %}">
+                          <span class="label label-default">Origin Data</span>
+                          {{ origin_data.name }}
+                        </a>
+                        {% if origin_data.analysis_data.count > 0 %}
+                          <!-- analysis datasets from origin dataset -->
+                          <ul>
+                            {% for analysis_data in origin_data.analysis_data.all %}
+                              <li>
+                                <a href="{% url 'analysis_data_summary' project_obj.id analysis_data.id %}">
+                                  <span class="label label-default">Analysis Data</span>
+                                  {{ analysis_data.name }}
+                                </a>
+                              </li>
+                            {% endfor %}
+                          </ul>
+                        {% endif %}
+                      </li>
+                    {% endfor %}
+                    <!-- analysis datasets without origin dataset -->
+                    {% for analysis_data in sample.analysis_data.all %}
+                      {% if not analysis_data.base_origin_data %}
+                        <li>
+                          <a href="{% url 'analysis_data_summary' project_obj.id analysis_data.id %}">
+                            <span class="label label-default">Analysis Data</span>
+                            {{ analysis_data.name }}
+                          </a>
+                        </li>
+                      {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    <li>No datasets in this sample</li>
+                  {% endif %}
+                </ul>
+              </li>
+              {% endfor %}
+
+              {% if project_obj.origin_data_without_sample.count > 0 or project_obj.analysis_data_without_sample_or_origin.count > 0 %}
+              <li>
+                <span class="label label-default">Sample</span>
+                <span class="text-warning sample-unknown">Unknown</span>
+                <ul>
+                  <!-- origin datasets without sample -->
+                  {% for origin_data in project_obj.origin_data_without_sample.all %}
+                    <li>
+                      <a href="{% url 'origin_data_summary' project_obj.id origin_data.id %}">
+                        <span class="label label-default">Origin Data</span>
+                        {{ origin_data.name }}
+                      </a>
+                      {% if origin_data.analysis_data.count > 0 %}
+                        <!-- analysis datasets from origin dataset -->
+                        <ul>
+                          {% for analysis_data in origin_data.analysis_data.all %}
+                            <li>
+                              <a href="{% url 'analysis_data_summary' project_obj.id analysis_data.id %}">
+                                <span class="label label-default">Analysis Data</span>
+                                {{ analysis_data.name }}
+                              </a>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+
+                  <!-- analysis dataset without sample or origin data -->
+                  {% for analysis_data in project_obj.analysis_data_without_sample_or_origin.all %}
+                    <li>
+                      <a href="{% url 'analysis_data_summary' project_obj.id analysis_data.id %}">
+                        <span class="label label-default">Analysis Data</span>
+                        {{ analysis_data.name }}
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+        {% endif %}
+       </section>
+    </div>
+
+    <div class="col-md-4" itemscope itemtype="http://schema.org/Dataset">
+      <div class="well well-sm">
+        <h4>Author</h4>
+        <p itemprop="author">{{ project_obj.user }}</p>
+
+        {% if allow_edit or project_obj.collaborators.count > 0 %}
+          <h4>Collaborators</h4>
+          <ul class="list-unstyled">
+            {% for collab in project_obj.collaborators.all %}
+              <li itemprop="contributor">{{ collab }}</li>
+            {% endfor %}
+          </ul>
+          {% if allow_edit %}
+            <a href="{% url 'project_add_collaborator' project_id=project_obj.id %}">Manage collaborators</a>
+          {% endif %}
+        {% endif %}
+
+      </div>
+
+      {% if archive_size %}
+      <div class="well well-sm">
+        <h4>Download Project</h4>
+	      <p>The downloadable archive contains all project data; the size of the archive file for this project is <b>{{ archive_size }}</b>.</p>
+	      <a class="btn btn-info" href="{% get_media_prefix %}projects/{{ project_obj.id }}/archive.zip">Download<a/>
+      </div>
+      {% elif allow_edit and project_obj.access != 1 %}
+      <div class="well well-sm">
+        <h4>Download Project</h4>
+	      <p>This project is not currently archived. Users may download an archive of your project once it is published.</p>
+      </div>
+      {% else %}
+      <div class="well well-sm">
+        <h4>Download Project</h4>
+	      <p>This project does not have an archive available to download.</p>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+{% endblock %}

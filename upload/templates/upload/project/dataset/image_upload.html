@@ -1,0 +1,165 @@
+{% extends "upload/project/base.html" %}
+
+{% block title %}Upload Image Data - {{dataset.name}} - {{project_obj.name}}{% endblock %}
+
+{% block project %}
+
+<h2>
+  {{dataset.name}} <small>Upload Image Data</small>
+</h2>
+
+<p class="lead">
+  You can upload image data from your personal computer or transfer files already
+  uploaded to
+  <a style="white-space:nowrap" href="https://dropbox.com" rel="nofollow" target="_blank">Dropbox <i class="glyphicon glyphicon-link"></i></a>
+  or
+  <a style="white-space:nowrap" href="https://box.com" rel="nofollow" target="_blank">Box.com <i class="glyphicon glyphicon-link"></i></a>.
+</p>
+
+<h4>Upload Options</h4>
+<form method="post" name="upload-form" id="id_upload-form" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="form-group">
+    <div class="upload-options row">
+      <div class="col-md-4 col-xs-12">
+        <span class="fileinput-button btn btn-primary btn-lg btn-block btn-filechooser">
+          <i class="glyphicon glyphicon-file"></i> Choose files from computer
+          <input type="file" name="images" id="id_images" multiple>
+        </span>
+      </div>
+      <div class="col-md-4 col-xs-6">
+        <button class="btn btn-lg btn-default btn-block btn-dropbox" name="dropbox-upload" id="id_dropbox-upload" type="button">
+          <span class="sr-only">Dropbox</span>
+        </button>
+      </div>
+      <div class="col-md-4 col-xs-6">
+        <button class="btn btn-lg btn-default btn-block btn-box" type="button">
+          <span class="sr-only">Box.com</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <p class="help-block text-center">
+    You can drag-and-drop files from your computer to
+    this page to upload.
+  </p>
+
+  <div class="table-responsive">
+    <table class="table table-bordered"><tbody class="files"></tbody></table>
+  </div>
+
+  <div class="upload-progress hide">
+    <div class="progress">
+      <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+        <span class="sr-only">0% Complete</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions text-center fileupload-buttonbar">
+    <button type="submit" class="btn btn-lg btn-primary start" disabled>Upload Files</button>
+    <a href="{{dataset_view_url}}" class="btn btn-link cancel">Back to dataset</a>
+  </div>
+
+</form>
+{% endblock %}
+
+{% block javascript_block %}
+<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="{{dropbox_app_key}}"></script>
+<script type="text/javascript" src="https://app.box.com/js/static/select.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}vendor/blueimp-tmpl/js/tmpl.js"></script>
+<script id="template-upload" type="text/x-tmpl">
+  <tr class="template-upload fade <% if (o.file.source === 'Local file') { %>local-upload<%} else { %>cloud-upload<% } %>">
+    <td>
+      <p><%=o.file.source%></p>
+      <input type="hidden" name="source" id="id_source" value="<%=o.file.source%>">
+      <input type="hidden" name="name" id="id_name" value="<%=o.file.name%>">
+      <input type="hidden" name="size" id="id_size" value="<%=o.file.size%>">
+      <input type="hidden" name="url" id="id_url" value="<%=o.file.url%>">
+      <input type="hidden" name="basic" id="id_basic" value="<%=o.file.standardImage%>">
+    </td>
+    <td>
+      <p class="name"><%=o.file.name%> <small class="text-muted"><%=o.file.sizeFmt%></small></p>
+      <div class="form-horizontal <% if (o.file.standardImage) { %>hide<% }%>">
+        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
+          <label class="control-label col-sm-3" for="id_image_type">Image type</label>
+          <div class="col-sm-9">
+          <select id="image_type" name="image_type" id="id_image_type" class="form-control">
+            <option value="">Choose one</option>
+            <option value="8-bit">8-bit</option>
+            <option value="16-bit Signed">16-bit Signed</option>
+            <option value="16-bit Unsigned">16-bit Unsigned</option>
+            <option value="32-bit Signed">32-bit Signed</option>
+            <option value="32-bit Unsigned">32-bit Unsigned</option>
+            <option value="32-bit Real">32-bit Real</option>
+            <option value="64-bit Real">64-bit Real</option>
+            <option value="24-bit RGB">24-bit RGB</option>
+            <option value="24-bit RGB Planar">24-bit RGB Planar</option>
+            <option value="24-bit BGR">24-bit BGR</option>
+            <option value="24-bit Integer">24-bit Integer</option>
+            <option value="32-bit ARGB">32-bit ARGB</option>
+            <option value="32-bit ABGR">32-bit ABGR</option>
+            <option value="1-bit Bitmap">1-bit Bitmap</option>
+          </select>
+          </div>
+        </div>
+        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
+          <label class="col-sm-3 control-label" for="id_width">Width</label>
+          <div class="col-sm-9">
+          <input type="text" class="form-control" name="width" id="id_width" placeholder="width">
+          <p class="help-block">Number of voxels in the X-direction</p>
+          </div>
+        </div>
+        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
+          <label class="col-sm-3 control-label" for="id_height">Height</label>
+          <div class="col-sm-9">
+          <input type="text" class="form-control" name="height" id="id_height" placeholder="height">
+          <p class="help-block">Number of voxels in the Y-direction</p>
+          </div>
+        </div>
+        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
+          <label class="col-sm-3 control-label" for="id_numberofImages">Number of images</label>
+          <div class="col-sm-9">
+          <input type="text" class="form-control" name="numberOfImages" id="id_numberofImages" placeholder="number of images">
+          <p class="help-block">Number of voxels in the Z-direction</p>
+          </div>
+        </div>
+        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
+          <label class="col-sm-3 control-label" for="id_offsetToFirstImage">Offset to first image</label>
+          <div class="col-sm-9">
+          <input type="text" class="form-control" name="offsetToFirstImage" id="id_offsetToFirstImage" placeholder="offset" value="0">
+          </div>
+        </div>
+        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
+          <label class="col-sm-3 control-label" for="id_gapBetweenImages">Gap between images</label>
+          <div class="col-sm-9">
+          <input type="text" class="form-control" name="gapBetweenImages" id="id_gapBetweenImages" placeholder="gap" value="0">
+          </div>
+        </div>
+        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
+          <label class="col-sm-3 control-label" for="id_byteOrder">Byte order</label>
+          <div class="col-sm-9">
+          <select class="form-control" name="byteOrder" id="id_byteOrder">
+            <option value="">Choose one</option>
+            <option value="big-endian">Big endian</option>
+            <option value="little-endian">Little endian</option>
+          </select>
+          <p class="help-block">Big endian and little endian refers to the direction data (each bit in a byte of data, that is) was written in the binary array you are uploading. This depends on the machine that wrote the original data file. If you don&#39;t know this information, wait until the upload is done and review resulting .jpg or .gif files. Mixing up endian-ness of your data is one of the reasons why your data will not look right at the end of the upload, so change it as necessary.</p>
+          </div>
+        </div>
+      </div>
+    </td>
+    <td>
+      <button class="btn btn-warning btn-sm cancel" tabindex="-1">
+        <i class="glyphicon glyphicon-ban-circle"></i>
+        <span class="sr-only">Cancel</span>
+      </button>
+    </td>
+  </tr>
+</script>
+<script type="text/javascript" src="{{STATIC_URL}}vendor/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}vendor/blueimp-file-upload/js/jquery.fileupload.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}upload/js/csrf.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script><!--TODO: put this lib in static folder-->
+<script type="text/javascript" src="{{STATIC_URL}}upload/js/image-upload.js"></script>
+{% endblock %}

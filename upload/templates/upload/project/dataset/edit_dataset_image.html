@@ -1,0 +1,38 @@
+{% extends "upload/project/base.html" %}
+
+{% load bootstrap3 %}
+{% load upload_tags %}
+
+{% block title %}Edit Dataset Image - {{image.file_name}} - {{dataset.name}} - {{project_obj.name}} - Project{% endblock %}
+
+{% block project %}
+  <h1>Edit {{ image.file_name }}</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="thumbnail">
+      <img src="{% upload_thumbnail data_file %}">
+    </div>
+
+    {% if form %}{% bootstrap_form form %}{% endif %}
+
+    <div class="form-actions">
+      <button type="submit" name="save" class="btn btn-primary">Save changes</button>
+      <a href="{{ dataset_url }}" class="btn btn-link">Cancel</a>
+      <button type="submit" name="delete" value="delete" class="btn btn-danger pull-right">Delete image</button>
+    </div>
+  </form>
+
+{% endblock %}
+
+{% block javascript_block %}
+<script>
+  (function(window, $) {
+    $('button[name="delete"]').on('click', function(e) {
+      if (! window.confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+        e.preventDefault();
+      }
+    });
+  })(window, jQuery);
+</script>
+{% endblock %}
