@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'LBPM.apps.LbpmConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,8 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # The Django sites framework is required
     #'django.contrib.sites',
-
-    'impersonate',
+    #'impersonate',
     'bootstrap3',
 
     'upload',

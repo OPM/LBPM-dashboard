@@ -1,0 +1,6 @@
+<form action="/LBPM/simulation" method="post">
+    {% csrf_token %}
+    {{ form }}
+    {{my_field.label|linebreaks}}
+    <input type="submit" value="Submit">
+</form>
