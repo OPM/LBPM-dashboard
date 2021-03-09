@@ -3,6 +3,9 @@ Requirements
 Steps to set up local web server
 1. Install python  dependencies
 
+pip install Django==3.1.7
+pip install django-bootstrap3
+
 2. Apply migrations to create initial database
 
 python manage.py makemigrations
