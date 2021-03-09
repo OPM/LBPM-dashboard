@@ -15,6 +15,7 @@ def simulation(request):
    Nx = request.POST.get('Nx')
    Ny = request.POST.get('Ny')
    Nz = request.POST.get('Nz')
+   voxel_length = request.POST.get('voxel_length')
    capillary_number = float(request.POST.get('capillary_number'))
    viscosity_ratio = float(request.POST.get('viscosity_ratio'))
    density_ratio = float(request.POST.get('density_ratio'))
@@ -67,6 +68,7 @@ def simulation(request):
       Fz = 1.0e-5
    LBPM_input_file = "Domain {\n"
    LBPM_input_file += '   filename = "'+filename+'"'+"\n"
+   LBPM_input_file += '   voxel_length = '+voxel_length+"\n"
    LBPM_input_file += "   N = "+Nx+", "+Ny+", "+Nz+"\n"
    LBPM_input_file += "   n = "+Nx+", "+Ny+", "+Nz+"\n"
    LBPM_input_file += "   nproc = 1, 1, 1 \n"
@@ -84,10 +86,10 @@ def simulation(request):
       LBPM_input_file += '   protocol = "shell aggregation"'+"\n"
    elif protocol ==  "Image sequence" :
       LBPM_input_file += '   protocol = "image sequence"'+"\n"
-   LBPM_input_file += '   rho_w = '+str(rho_w)+"\n"
-   LBPM_input_file += '   rho_n = '+str(rho_n)+"\n"
-   LBPM_input_file += '   tau_w = '+str(tau_w)+"\n"
-   LBPM_input_file += '   tau_n = '+str(tau_n)+"\n"
+   LBPM_input_file += '   rhoA = '+str(rho_n)+"\n"
+   LBPM_input_file += '   rhoB = '+str(rho_w)+"\n"
+   LBPM_input_file += '   tauA = '+str(tau_n)+"\n"
+   LBPM_input_file += '   tauB = '+str(tau_w)+"\n"
    LBPM_input_file += '   alpha = '+str(alpha)+"\n"
    LBPM_input_file += '   beta = '+str(beta)+"\n"
    LBPM_input_file += "   F = "+str(Fx)+", "+str(Fy)+", "+str(Fz)+"\n"
