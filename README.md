@@ -1,5 +1,7 @@
 Requirements
 
+(Tested using anaconda Python 3.8.3)
+
 Steps to set up local web server
 1. Install python  dependencies
 
