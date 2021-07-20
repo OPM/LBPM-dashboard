@@ -13,7 +13,6 @@ import logging
 
 logger = logging.getLogger('console')
 
-
 class AddProjectForm(ModelForm):
     user_agreement_label = 'LBPM assumes no liability for any use of this software'
 
@@ -27,19 +26,18 @@ class AddProjectForm(ModelForm):
 
     class Meta:
         model = Project
-        fields = ('name', 'description', 'cover_pic', 'user_agreement')
+#        fields = ('name', 'description', 'cover_pic', 'user_agreement')
+        fields = ('name',)
         labels = {
             'name': 'Name',
-            'description': 'Description',
-            'cover_pic': 'Project cover image',
+#            'description': 'Description',
+#            'cover_pic': 'Project cover image',
         }
 
         help_texts = {
-            'name': 'Choose a name that is short, unique, and identifies the nature of your project',
-            'cover_pic': 'This image will be displayed in project thumbnails and search results',
-            'description': 'The description is used for search and retrieval of your dataset. We recommend precision in the nar\
-rative and the use of descriptive nouns so that your project is more discoverable and reusable. When writing a description cons\
-ider answering the following: What is this data about? What is the purpose? Through which method was it obtained? ',
+            'name': 'Choose a name to identify your simulation project',
+#            'cover_pic': 'This image will be displayed in project thumbnails and search results',
+#            'description': 'The description is used for search and retrieval of your dataset.',
         }
 
 
@@ -82,6 +80,15 @@ class OriginDataForm(ModelForm):
     class Meta:
         model = origin_data
         exclude = ['project', 'uploader', 'doi',]
+#        fields = [
+#            'name',
+#            'voxel_x', 'voxel_y', 'voxel_z',
+#            'voxel_units', 'voxel_other',
+#            ]
+#        widgets = {
+ #           'is_segmented': forms.RadioSelect(),
+ #           'provenance': forms.Textarea(attrs={'rows':3}),
+#            }
         fields = [
             'name', 'provenance', 'external_url',
             'is_segmented', 'voxel_x', 'voxel_y', 'voxel_z',

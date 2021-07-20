@@ -5,32 +5,14 @@
 {% block title %}Add Dataset - {{project_obj.name}} - Project{% endblock %}
 
 {% block project %}
-  <h2>Add a new Dataset</h2>
+  <h2>Add Image Dataset</h2>
 
   <div class="row">
     <div class="col-sm-3 col-sm-push-9">
       <div class="well well-sm">
-        <h4>Dataset types</h4>
+        <h4>3D Image Data</h4>
         <p>
-          There are two types of datasets that can be added. Select the tab below of
-          the type of dataset you wish to add at this time.
-          <ul>
-            <li>
-              <b>Origin dataset</b>
-              <p>
-                An origin dataset contains data that has not been analyzed yet,
-                for example segmented data or data coming from direct imaging
-                processes, etc.
-              </p>
-            </li>
-            <li>
-              <b>Analysis dataset</b>
-              <p>
-                An analysis dataset contains results of analysis done on origin
-                data, for example simulation data.
-              </p>
-            </li>
-          </ul>
+          LBPM relies on segmented 3D image data to provide information about the solid microstructure
         </p>
       </div>
     </div>
@@ -38,12 +20,7 @@
       <ul class="nav nav-tabs nav-justified">
         <li role="presentation" class="{% if submission_type == 'origin' %}active{% endif %}">
           <a href="#origin-data" data-toggle="tab">
-            <b>Origin dataset</b>
-          </a>
-        </li>
-        <li role="presentation" class="{% if submission_type == 'analysis' %}active{% endif %}">
-          <a href="#analysis-data" data-toggle="tab">
-            <b>Analysis dataset</b>
+            <b>Image dataset</b>
           </a>
         </li>
       </ul>
@@ -54,9 +31,10 @@
             {% csrf_token %}
             <fieldset>
               {% bootstrap_field origin_data_form.name %}
-              {% bootstrap_field origin_data_form.is_segmented %}
+<!--              {% bootstrap_field origin_data_form.is_segmented %}
               {% bootstrap_field origin_data_form.provenance %}
               {% bootstrap_field origin_data_form.external_url %}
+-->
             </fieldset>
 
             <fieldset>
@@ -85,16 +63,7 @@
               {% bootstrap_field origin_data_form.sample %}
             </fieldset>
             <input type="hidden" name="dataset_type" value="origin">
-            <button type="submit" class="btn btn-primary">Save Origin Dataset</button>
-          </form>
-        </div>
-
-        <div id="analysis-data" class="tab-pane {% if submission_type == 'analysis' %}active{% endif %}">
-          <form method="post">
-            {% csrf_token %}
-            {% bootstrap_form analysis_data_form %}
-            <input type="hidden" name="dataset_type" value="analysis">
-            <button type="submit" class="btn btn-primary">Save Analysis Dataset</button>
+            <button type="submit" class="btn btn-primary">Save Image Dataset</button>
           </form>
         </div>
       </div>

@@ -21,6 +21,9 @@ from PIL import Image
 from upload.forms import (AddProjectForm, AdvancedImageUploadForm, OriginDataForm, AnalysisDataForm, SampleDataForm, DataFileUploadForm)
 from upload.models import (project, origin_data)
 
+import logging
+import logging.config
+logger = logging.getLogger('console')
 #    AccountProfileForm, AddProjectForm, ProjectEditForm, PublicationForm,
 #                    OriginDataForm, AnalysisDataForm, SampleDataForm,
 #                    AdvancedImageUploadForm, AdvancedImageEditForm,
