@@ -15,6 +15,10 @@ python manage.py makemigrations
 
 python manage.py migrate
 
+2b. Collect static files
+
+python manage.py collectstatic
+
 3. Create an admin user (needed to create accounts for features that require login)
 
 python manage.py createsuperuser
