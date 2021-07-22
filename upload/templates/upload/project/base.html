@@ -8,6 +8,9 @@
   <li role="presentation" class="{% active_nav request 'view_project' project_id=project_obj.id%}">
     <a href="{% url 'view_project' project_obj.id %}">Project</a>
   </li>
+    <li role="presentation" class="{% active_nav request 'add_sample' project_id=project_obj.id %}">
+      <a href="{% url 'add_sample' project_id=project_obj.id%}">Add Sample</a>
+    </li>
 <!---  {% if allow_edit %}
     <li role="presentation" class="{% active_nav request 'edit_project' project_id=project_obj.id %}">
       <a href="{% url 'edit_project' project_id=project_obj.id %}">Edit</a>

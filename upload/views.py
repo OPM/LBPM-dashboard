@@ -437,6 +437,102 @@ def analysis_data_summary(request, project_id, analysis_data_id):
     return render(request, 'upload/project/dataset/analysis_summary.html', context)
 
 
+@login_required
+def add_sample(request, project_id):
+
+    project_obj = project.objects.get(pk=project_id)
+
+    if request.method == 'POST':
+        post = request.POST.copy()
+        logger.debug('requst post: %s', post.get('location'))
+        if post.get('location') is None or len(post.get('location')) == 0:
+            post.update({'location': '-'})
+        logger.debug('requst post: %s', post)
+        form = SampleDataForm(post)
+        if form.is_valid():
+            sample = form.save(commit=False)
+            sample.project = project_obj
+            sample.uploader = request.user
+            sample.save()
+
+            if 'origin_data_id' in request.GET:
+                dataset = origin_data.objects.get(pk=request.GET['origin_data_id'])
+                dataset.sample = sample
+                dataset.save()
+                redirect_url = reverse('origin_data_summary', args=[project_id, dataset.id])
+            elif 'analysis_data_id' in request.GET:
+                dataset = analysis_data.objects.get(pk=request.GET['analysis_data_id'])
+                dataset.sample = sample
+                dataset.save()
+                redirect_url = reverse('analysis_data_summary', args=[project_id, dataset.id])
+            else:
+                redirect_url = reverse('view_sample', args=[project_id, sample.id])
+
+            return HttpResponseRedirect(redirect_url)
+    else:
+        form = SampleDataForm()
+
+    context = {
+        'project_obj': project_obj,
+        'form': form,
+        'allow_edit': True,
+    }
+
+    if 'origin_data_id' in request.GET:
+        dataset_id = request.GET['origin_data_id']
+        context['dataset'] = origin_data.objects.get(pk=dataset_id)
+        context['dataset_url'] = reverse('origin_data_summary', args=[project_id, dataset_id])
+    elif 'analysis_data_id' in request.GET:
+        dataset_id = request.GET['analysis_data_id']
+        context['dataset'] = analysis_data.objects.get(pk=dataset_id)
+        context['dataset_url'] = reverse('analysis_data_summary', args=[project_id, dataset_id])
+
+    return render(request, 'upload/project/add_sample.html', context)
+
+
+def view_sample(request, project_id, sample_id):
+    """
+    View description of the sample.
+
+    """
+    project_obj = project.objects.get(pk=project_id)
+    sample_obj = sample.objects.get(pk=sample_id)
+
+    context = {
+        'project_obj': project_obj,
+        'sample': sample_obj,
+        'allow_edit': project_obj.is_editable_by_user(request.user),
+        }
+
+    return render(request, 'upload/project/dataset/view_sample.html', context)
+
+@login_required
+def edit_sample(request, project_id, sample_id):
+    """
+    View description of the sample.
+
+    """
+    project_obj = project.objects.get(pk=project_id)
+    sample_obj = sample.objects.get(pk=sample_id)
+
+    if request.method == 'POST':
+        form = SampleDataForm(request.POST, instance=sample_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your changes have been saved!')
+            return HttpResponseRedirect(reverse('view_sample', args=[project_id, sample_obj.id]))
+    else:
+        form = SampleDataForm(instance=sample_obj)
+
+    context = {
+        'project_obj': project_obj,
+        'sample': sample_obj,
+        'form': form,
+        'allow_edit': True,
+        }
+
+    return render(request, 'upload/project/dataset/edit_sample.html', context)
+
 
 @login_required
 def update_collab_status(request, project_id, collaborator_id):

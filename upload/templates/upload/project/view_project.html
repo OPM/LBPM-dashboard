@@ -133,62 +133,8 @@
         <h4>Author</h4>
         <p>{{ project_obj.user }}</p>
 
-        {% if allow_edit or project_obj.collaborators.count > 0 %}
-          <h4>Collaborators</h4>
-          <ul class="list-unstyled">
-            {% for collab in project_obj.collaborators.all %}
-              <li>{{ collab }}</li>
-            {% endfor %}
-          </ul>
-          {% if allow_edit %}
-            <a href="{% url 'project_add_collaborator' project_id=project_obj.id %}">Manage collaborators</a>
-          {% endif %}
-        {% endif %}
-
-        <h4>Created</h4>
-        <p>{{ project_obj.creation_date }}</p>
-
-        <h4>License</h4>
-        <p>
-          {{ project_obj.get_license_display }}
-        </p>
-
-        {% if project_obj.doi %}
-          <h4>Cite this project</h4>
-          <p>{{ project_obj.doi }}</p>
         {% endif %}
       </div>
-      {% if allow_edit and project_obj.access != 1 %}
-      <div class="project-publish-request">
-        <h4>Publish this Project</h4>
-        {% if project_obj.access == 2 %}
-          {% if project_obj.projectpublicationrequest %}
-            {% if project_obj.projectpublicationrequest.status == 'revision_required' %}
-              <p>
-                Additional information is requested before your project can be published.
-              </p>
-              <p>
-                <a href="{% url 'project_request_publication_revision' project_obj.id %}" class="btn btn-warning">Continue</a>
-              </p>
-            {% else %}
-              <p>
-                You have requested to publish this project. A project
-                curator will be in touch to assist you with the publication
-                process.
-              </p>
-            {% endif %}
-          {% else %}
-            <p>
-              If you are ready to publish your project, you can request
-              it be reviewed for publication.
-            </p>
-            <p>
-              <a href="{% url 'project_request_publication' project_obj.id %}" class="btn btn-warning">Request Publication</a>
-            </p>
-          {% endif %}
-        {% endif %}
-      </div>
-      {% endif %}
     </div>
   </div>
 
