@@ -272,8 +272,8 @@ def dataset_image_upload(request, project_id, origin_data_id=None, analysis_data
             'project_obj': project_obj,
             'dataset': dataset,
             'dataset_view_url': reverse('%s_summary' % dataset_type, args=[project_obj.id, dataset.id]),
-            'dropbox_app_key': settings.DROPBOX_KEY,
-            'box_app_key': settings.BOX_KEY,
+            #'dropbox_app_key': settings.DROPBOX_KEY,
+            #'box_app_key': settings.BOX_KEY,
             'allow_edit': True,
             }
         return render(request, 'upload/project/dataset/image_upload.html', context)
@@ -338,6 +338,220 @@ def edit_dataset_image(request, project_id, image_id):
     }
 
     return render(request, 'upload/project/dataset/edit_dataset_image.html', context)
+
+@login_required
+def origin_edit_metadata(request, project_id, origin_data_id):
+    """
+    Edit origin metadata.
+
+    """
+    project_obj = project.objects.get(id=project_id)
+    if not project_obj.is_editable_by_user(request.user):
+        return HttpResponse('Dataset is not editable', status=403)
+
+    dataset = origin_data.objects.get(pk=origin_data_id)
+    dataset_url = reverse('origin_data_summary', args=[dataset.project.id, dataset.id])
+
+    if request.method == 'POST':
+        if 'delete' in request.POST:
+            dataset.delete()
+            messages.success(request, 'The origin data set "%s" has been deleted.' %
+                             dataset.name)
+            return HttpResponseRedirect(reverse('view_project', args=[project_id]))
+
+        form = OriginDataForm(project_obj, request.POST, instance=dataset)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your changes have been saved.')
+            return HttpResponseRedirect(dataset_url)
+    else:
+        form = OriginDataForm(project_obj, instance=dataset)
+
+    context = {
+        'project_obj': project_obj,
+        'dataset': dataset,
+        'dataset_url': dataset_url,
+        'form': form,
+        'allow_edit': True,
+    }
+
+    return render(request, 'upload/project/dataset/origin_edit.html', context)
+
+@login_required
+def analysis_edit_metadata(request, project_id, analysis_data_id):
+    """
+    Edit analysis metadata.
+    """
+    project_obj = project.objects.get(id=project_id)
+    if not project_obj.is_editable_by_user(request.user):
+        return HttpResponse('Dataset is not editable', status=403)
+
+    dataset = analysis_data.objects.get(pk=analysis_data_id)
+    dataset_url = reverse('analysis_data_summary', args=[dataset.project.id, dataset.id])
+
+    if request.method == 'POST':
+        if 'delete' in request.POST:
+            dataset.delete()
+            messages.success(request, 'The analysis data set "%s" has been deleted.' %
+                             dataset.name)
+            return HttpResponseRedirect(reverse('view_project', args=[project_id]))
+
+        form = AnalysisDataForm(project_obj, request.POST, instance=dataset)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your changes have been saved.')
+            return HttpResponseRedirect(dataset_url)
+    else:
+        form = AnalysisDataForm(project_obj, instance=dataset)
+
+    context = {
+        'project_obj': project_obj,
+        'dataset': dataset,
+        'dataset_url': dataset_url,
+        'form': form,
+        'allow_edit': True,
+    }
+
+    return render(request, 'upload/project/dataset/analysis_edit.html', context)
+
+
+def origin_data_summary(request, project_id, origin_data_id):
+    """
+    This function would generate a view for the origin data
+    containing its metadata and files.
+
+    """
+    # We don't need to check for authentication here. Because
+    # this view would be enabled for all. However, we would
+    # ensure form takes care whether user is authenticated
+    # and gives required permissions.
+    project_obj = project.objects.filter(id=project_id)[0]
+    origin_data_obj = origin_data.objects.filter(id=origin_data_id)[0]
+
+    paginator = Paginator(origin_data_obj.allfiles.all(), FILES_PAGE_SIZE)
+    page = request.GET.get('page', 1)
+    try:
+        images = paginator.page(page)
+    except PageNotAnInteger:
+        images = paginator.page(1)
+    except EmptyPage:
+        images = paginator.page(paginator.num_pages)
+
+    context = {
+        'project_obj' : project_obj,
+        'dataset' : origin_data_obj,
+        'allow_edit': project_obj.is_editable_by_user(request.user),
+        'images': images,
+        'paginator': paginator,
+    }
+    return render(request, 'upload/project/dataset/origin_summary.html', context)
+
+
+def analysis_data_summary(request, project_id, analysis_data_id):
+    """
+    This function would generate a view for the analysis data
+    containing its metadata and files.
+
+    """
+    project_obj = project.objects.filter(id=project_id)[0]
+    analysis_data_obj = analysis_data.objects.filter(id=analysis_data_id)[0]
+
+    paginator = Paginator(analysis_data_obj.allfiles.all(), FILES_PAGE_SIZE)
+    page = request.GET.get('page', 1)
+    try:
+        images = paginator.page(page)
+    except PageNotAnInteger:
+        images = paginator.page(1)
+    except EmptyPage:
+        images = paginator.page(paginator.num_pages)
+
+    context = {
+        'project_obj' : project_obj,
+        'dataset' : analysis_data_obj,
+        'allow_edit': project_obj.is_editable_by_user(request.user),
+        'images': images,
+        'paginator': paginator,
+    }
+
+    return render(request, 'upload/project/dataset/analysis_summary.html', context)
+
+
+def save_nonimage_instance(df):
+    non_image = NonImageFile.objects.create(file = df.file, origin_data = df.origin_data,
+                               analysis_data = df.analysis_data,
+                               uploader = df.uploader, isNonImageFile = True)
+    return non_image
+
+
+def save_image_instance(df,request):
+    image = NormalImageFile.objects.create(file = df.file, origin_data = df.origin_data,
+                               analysis_data = df.analysis_data,
+                               uploader = request.user, isNormalImageFile = True)
+    return image
+
+
+def save_advanced_image_instance(df):
+    image = AdvancedImageFile.objects.create(file = df.file, origin_data = df.origin_data,
+                               analysis_data = df.analysis_data,
+                               uploader = df.uploader, isAdvancedImageFile = True)
+    return image
+
+
+@login_required
+def dataset_nonimage_upload(request, project_id, origin_data_id=None, analysis_data_id=None):
+    project_obj = project.objects.get(pk=project_id)
+    dataset = None
+    dataset_type = None
+    if origin_data_id:
+        dataset = origin_data.objects.get(pk=origin_data_id)
+        dataset_type = 'origin_data'
+    elif analysis_data_id:
+        dataset = analysis_data.objects.get(pk=analysis_data_id)
+        dataset_type = 'analysis_data'
+
+    if dataset is None:
+        raise Exception('Missing dataset')
+
+    if request.method != 'POST':
+        context = {
+            'project_obj': project_obj,
+            'dataset': dataset,
+            'dataset_view_url': reverse('%s_summary' % dataset_type, args=[project_obj.id, dataset.id]),
+            'dropbox_app_key': settings.DROPBOX_KEY,
+            'box_app_key': settings.BOX_KEY,
+            'allow_edit': True,
+            }
+        return render(request, 'upload/project/dataset/nonimage_upload.html', context)
+    else:
+        form = DataFileUploadForm(request.POST)
+        if form.is_valid():
+            logger.debug("Saving the DataFileUploadForm")
+            df = DataFile()
+            df.uploader = request.user
+            if dataset_type == 'origin_data':
+                df.origin_data= dataset
+            else:
+                df.analysis_data = dataset
+            if form.cleaned_data['source'] == 'Local file':
+                df.file = request.FILES.get('images')
+            else:
+                remote_file_url = form.cleaned_data.get('url')
+                remote_file_name = form.cleaned_data.get('name')
+                img_temp = NamedTemporaryFile(delete=True)
+                img_temp.write(urllib2.urlopen(remote_file_url).read())
+                img_temp.flush()
+                df.file = File(img_temp, name=remote_file_name)
+            logger.debug('Saving a datafile')
+            nonimageInstance = save_nonimage_instance(df)
+            extract_store_metadata.delay(nonimageInstance.id)
+            response = {'status': 'success'}
+            return JsonResponse(response)
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'result': form.errors,
+            }, status=400)
+
 
 @login_required
 def add_collaborator(request, project_id):

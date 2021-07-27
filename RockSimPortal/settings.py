@@ -96,6 +96,14 @@ DATABASES = {
     }
 }
 
+ELASTIC_SEARCH = {
+    'cluster': {
+        'hosts': [
+            'elasticsearch'
+            ]
+    },
+    'default_index': 'digitalrocks'
+}
 
 MULTIUPLOADER_FORMS_SETTINGS = {
 'default': {

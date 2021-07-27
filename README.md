@@ -5,26 +5,35 @@ Requirements
 Steps to set up local web server
 1. Install python  dependencies
 
-pip install Django==3.1.7
+  pip3 install Django==3.1.7
 
-pip install django-bootstrap3
+  pip3 install django-bootstrap3
+
+  pip3 install celery==4.4.2
+
+  pip3 install elasticsearch_dsl
 
 2. Apply migrations to create initial database
 
-python manage.py makemigrations
+  python manage.py makemigrations
 
-python manage.py migrate
+  python manage.py migrate
+
+NOTE: sometimes the command below is helpful if testing the database
+
+  python manage.py migrate --run-syncdb
 
 2b. Collect static files
 
-python manage.py collectstatic
+  python manage.py collectstatic
 
 3. Create an admin user (needed to create accounts for features that require login)
 
-python manage.py createsuperuser
+  python manage.py createsuperuser
 
 4. Launch the webserver
 
-python manage.py runserver
+  python manage.py runserver
+
 
 

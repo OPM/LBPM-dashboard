@@ -1,17 +1,36 @@
 {% extends 'upload/project/base.html' %}
+
 {% load bootstrap3 %}
 
 {% block title %}Add Dataset - {{project_obj.name}} - Project{% endblock %}
 
 {% block project %}
-  <h2>Add Image Dataset</h2>
+  <h2>Add a new Dataset</h2>
 
   <div class="row">
     <div class="col-sm-3 col-sm-push-9">
       <div class="well well-sm">
-        <h4>3D Image Data</h4>
+        <h4>Dataset types</h4>
         <p>
-          LBPM relies on segmented 3D image data to provide information about the solid microstructure
+          There are two types of datasets that can be added. Select the tab below of
+          the type of dataset you wish to add at this time.
+          <ul>
+            <li>
+              <b>Origin dataset</b>
+              <p>
+                An origin dataset contains data that has not been analyzed yet,
+                for example segmented data or data coming from direct imaging
+                processes, etc.
+              </p>
+            </li>
+            <li>
+              <b>Analysis dataset</b>
+              <p>
+                An analysis dataset contains results of analysis done on origin
+                data, for example simulation data.
+              </p>
+            </li>
+          </ul>
         </p>
       </div>
     </div>
@@ -19,7 +38,12 @@
       <ul class="nav nav-tabs nav-justified">
         <li role="presentation" class="{% if submission_type == 'origin' %}active{% endif %}">
           <a href="#origin-data" data-toggle="tab">
-            <b>Image dataset</b>
+            <b>Origin dataset</b>
+          </a>
+        </li>
+        <li role="presentation" class="{% if submission_type == 'analysis' %}active{% endif %}">
+          <a href="#analysis-data" data-toggle="tab">
+            <b>Analysis dataset</b>
           </a>
         </li>
       </ul>
@@ -30,10 +54,9 @@
             {% csrf_token %}
             <fieldset>
               {% bootstrap_field origin_data_form.name %}
-<!--              {% bootstrap_field origin_data_form.is_segmented %}
+              {% bootstrap_field origin_data_form.is_segmented %}
               {% bootstrap_field origin_data_form.provenance %}
               {% bootstrap_field origin_data_form.external_url %}
--->
             </fieldset>
 
             <fieldset>
@@ -62,135 +85,19 @@
               {% bootstrap_field origin_data_form.sample %}
             </fieldset>
             <input type="hidden" name="dataset_type" value="origin">
-            <button type="submit" class="btn btn-primary">Save Image Dataset</button>
+            <button type="submit" class="btn btn-primary">Save Origin Dataset</button>
+          </form>
+        </div>
+
+        <div id="analysis-data" class="tab-pane {% if submission_type == 'analysis' %}active{% endif %}">
+          <form method="post">
+            {% csrf_token %}
+            {% bootstrap_form analysis_data_form %}
+            <input type="hidden" name="dataset_type" value="analysis">
+            <button type="submit" class="btn btn-primary">Save Analysis Dataset</button>
           </form>
         </div>
       </div>
     </div>
   </div>
-
-<!--
-<h2>
-  {{dataset.name}} <small>Upload Image Data</small>
-</h2>
-
-
-<h4>Upload Options</h4>
-<form method="post" name="upload-form" id="id_upload-form" enctype="multipart/form-data">
-  {% csrf_token %}
-  <div class="form-group">
-    <div class="upload-options row">
-      <div class="col-md-4 col-xs-12">
-        <span class="fileinput-button btn btn-primary btn-lg btn-block btn-filechooser">
-          <i class="glyphicon glyphicon-file"></i> Choose files from computer
-          <input type="file" name="images" id="id_images" multiple>
-        </span>
-      </div>
-      </div>
-    </div>
-  </div>
-  <div class="actions text-center fileupload-buttonbar">
-    <button type="submit" class="btn btn-lg btn-primary start">Upload Files</button>
-    <a href="{{dataset_view_url}}" class="btn btn-link cancel">Back to dataset</a>
-  </div>
-
-</form>
 {% endblock %}
-
-{% block javascript_block %}
-<script type="text/javascript" src="{{STATIC_URL}}vendor/blueimp-tmpl/js/tmpl.js"></script>
-<script id="template-upload" type="text/x-tmpl">
-  <tr class="template-upload fade <% if (o.file.source === 'Local file') { %>local-upload<%} else { %>cloud-upload<% } %>">
-    <td>
-      <p><%=o.file.source%></p>
-      <input type="hidden" name="source" id="id_source" value="<%=o.file.source%>">
-      <input type="hidden" name="name" id="id_name" value="<%=o.file.name%>">
-      <input type="hidden" name="size" id="id_size" value="<%=o.file.size%>">
-      <input type="hidden" name="url" id="id_url" value="<%=o.file.url%>">
-      <input type="hidden" name="basic" id="id_basic" value="<%=o.file.standardImage%>">
-    </td>
-    <td>
-      <p class="name"><%=o.file.name%> <small class="text-muted"><%=o.file.sizeFmt%></small></p>
-      <div class="form-horizontal <% if (o.file.standardImage) { %>hide<% }%>">
-        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
-          <label class="control-label col-sm-3" for="id_image_type">Image type</label>
-          <div class="col-sm-9">
-          <select id="image_type" name="image_type" id="id_image_type" class="form-control">
-            <option value="">Choose one</option>
-            <option value="8-bit">8-bit</option>
-            <option value="16-bit Signed">16-bit Signed</option>
-            <option value="16-bit Unsigned">16-bit Unsigned</option>
-            <option value="32-bit Signed">32-bit Signed</option>
-            <option value="32-bit Unsigned">32-bit Unsigned</option>
-            <option value="32-bit Real">32-bit Real</option>
-            <option value="64-bit Real">64-bit Real</option>
-            <option value="24-bit RGB">24-bit RGB</option>
-            <option value="24-bit RGB Planar">24-bit RGB Planar</option>
-            <option value="24-bit BGR">24-bit BGR</option>
-            <option value="24-bit Integer">24-bit Integer</option>
-            <option value="32-bit ARGB">32-bit ARGB</option>
-            <option value="32-bit ABGR">32-bit ABGR</option>
-            <option value="1-bit Bitmap">1-bit Bitmap</option>
-          </select>
-          </div>
-        </div>
-        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
-          <label class="col-sm-3 control-label" for="id_width">Width</label>
-          <div class="col-sm-9">
-          <input type="text" class="form-control" name="width" id="id_width" placeholder="width">
-          <p class="help-block">Number of voxels in the X-direction</p>
-          </div>
-        </div>
-        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
-          <label class="col-sm-3 control-label" for="id_height">Height</label>
-          <div class="col-sm-9">
-          <input type="text" class="form-control" name="height" id="id_height" placeholder="height">
-          <p class="help-block">Number of voxels in the Y-direction</p>
-          </div>
-        </div>
-        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
-          <label class="col-sm-3 control-label" for="id_numberofImages">Number of images</label>
-          <div class="col-sm-9">
-          <input type="text" class="form-control" name="numberOfImages" id="id_numberofImages" placeholder="number of images">
-          <p class="help-block">Number of voxels in the Z-direction</p>
-          </div>
-        </div>
-        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
-          <label class="col-sm-3 control-label" for="id_offsetToFirstImage">Offset to first image</label>
-          <div class="col-sm-9">
-          <input type="text" class="form-control" name="offsetToFirstImage" id="id_offsetToFirstImage" placeholder="offset" value="0">
-          </div>
-        </div>
-        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
-          <label class="col-sm-3 control-label" for="id_gapBetweenImages">Gap between images</label>
-          <div class="col-sm-9">
-          <input type="text" class="form-control" name="gapBetweenImages" id="id_gapBetweenImages" placeholder="gap" value="0">
-          </div>
-        </div>
-        <div class="form-group <% if (o.file.isArchive==false) { %>required<% }%>">
-          <label class="col-sm-3 control-label" for="id_byteOrder">Byte order</label>
-          <div class="col-sm-9">
-          <select class="form-control" name="byteOrder" id="id_byteOrder">
-            <option value="">Choose one</option>
-            <option value="big-endian">Big endian</option>
-            <option value="little-endian">Little endian</option>
-          </select>
-          <p class="help-block">Big endian and little endian.</p>
-          </div>
-        </div>
-      </div>
-    </td>
-    <td>
-      <button class="btn btn-warning btn-sm cancel" tabindex="-1">
-        <i class="glyphicon glyphicon-ban-circle"></i>
-        <span class="sr-only">Cancel</span>
-      </button>
-    </td>
-  </tr>
-</script>
-<script type="text/javascript" src="{{STATIC_URL}}vendor/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}vendor/blueimp-file-upload/js/jquery.fileupload.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}upload/js/csrf.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}upload/js/image-upload.js"></script>
-{% endblock %}
--->

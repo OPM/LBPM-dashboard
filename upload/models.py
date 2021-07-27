@@ -3,6 +3,14 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import User as MyUser
 from django.urls import reverse
 
+from .api import (
+    ProjectMapping,
+    SampleMapping,
+    OriginDataMapping,
+    AnalysisDataMapping,
+    DatafileMapping,
+)
+
 #class MyUser(AbstractUser):
     # Notice that we are inheriting from AbstractUser. Therefore, we                                                            
     # get all the default fields for free.                                                                                      
@@ -308,11 +316,11 @@ class DataFile(models.Model):
 
     file = models.FileField(upload_to=project_file_path)
     # TODO: You can add related name to refer back from the referred table.
-    #origin_data = models.ForeignKey(origin_data, null=True, blank=True,
-    #                                related_name='allfiles', on_delete=models.CASCADE)
-    #analysis_data = models.ForeignKey(analysis_data, null=True, blank=True,
-    #                                  related_name='allfiles', on_delete=models.CASCADE)
-    #uploader = models.ForeignKey(MyUser, on_delete=models.CASCADE)
+    origin_data = models.ForeignKey(origin_data, null=True, blank=True,
+                                    related_name='allfiles', on_delete=models.CASCADE)
+    analysis_data = models.ForeignKey(analysis_data, null=True, blank=True,
+                                      related_name='allfiles', on_delete=models.CASCADE)
+    uploader = models.ForeignKey(MyUser, on_delete=models.CASCADE)
     isNonImageFile = models.BooleanField(default=False)
     isAdvancedImageFile = models.BooleanField(default=False)
     isNormalImageFile = models.BooleanField(default=False)

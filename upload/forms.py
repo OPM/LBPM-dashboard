@@ -21,6 +21,8 @@ class AddProjectForm(ModelForm):
                                         label=user_agreement_label,)
 
     def __init__(self, *args, **kwargs):
+        ModelForm.__init__(self)
+        self.all_data = []
         super(AddProjectForm, self).__init__(*args, **kwargs)
         self.fields['user_agreement'].required = True
 
@@ -58,7 +60,8 @@ class DataFileUploadForm(ModelForm):
         exclude = ['file', 'uploader']
 
     def clean(self):
-        cleaned_data = super(DataFileUploadForm, self).clean()
+        #cleaned_data = self.as_super.clean()
+        #cleaned_data = super(DataFileUploadForm, self).clean()
         logger.debug(cleaned_data)
 
         source = cleaned_data.get('source')
@@ -73,7 +76,9 @@ class OriginDataForm(ModelForm):
     voxel_other = forms.CharField(required=False, label='Other')
 
     def __init__(self, project, *args, **kwargs):
-        super(OriginDataForm, self).__init__(*args, **kwargs)
+        self.as_super = super(OriginDataForm, self)
+        self.as_super.__init__(*args, **kwargs)
+        #super(OriginDataForm, self).__init__(*args, **kwargs)
         self.fields['is_segmented'].empty_label = None
         self.fields['sample'].queryset = sample.objects.filter(project_id=project.id)
 
@@ -107,7 +112,9 @@ class AnalysisDataForm(ModelForm):
     analysis_other = forms.CharField(required=False, label='Other')
 
     def __init__(self, project, *args, **kwargs):
-        super(AnalysisDataForm, self).__init__(*args, **kwargs)
+        self.as_super = super(AnalysisDataForm, self)
+        self.as_super.__init__(*args, **kwargs)
+        #super(AnalysisDataForm, self).__init__(*args, **kwargs)
         self.fields['sample'].queryset = sample.objects.filter(project_id=project.id)
         self.fields['base_origin_data'].queryset = origin_data.objects.filter(project_id=project.id)
 
@@ -149,6 +156,11 @@ class AdvancedImageUploadForm(DataFileUploadForm):
                 'gapBetweenImages',
                 'byteOrder',
             ]
+
+
+    def __init__(self, *args, **kwargs):
+        DataFileUploadForm.__init__(self)
+        self.all_data = []
 
     def clean(self):
         cleaned_data = super(AdvancedImageUploadForm, self).clean()
@@ -229,7 +241,7 @@ class DataFileUploadForm(ModelForm):
         exclude = ['file', 'uploader']
 
     def clean(self):
-        cleaned_data = super(DataFileUploadForm, self).clean()
+        #cleaned_data = super(DataFileUploadForm, self).clean()
         logger.debug(cleaned_data)
 
         source = cleaned_data.get('source')
