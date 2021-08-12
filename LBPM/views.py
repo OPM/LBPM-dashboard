@@ -8,22 +8,37 @@ from .forms import ColorForm
 from .models import ImageData
 from .forms import ImageDataForm
 
+import os
+import numpy as np
+import matplotlib.pylab as plt
+
 def index(request):
    return get_color(request)
 
-def preview_image(request):
+def preview_image(request, SimPath):
    imageFile = request.FILES.get('image')
    #handle_uploaded_file(request.FILES[imageFile])
    filename = imageFile.name
-   #simDir = imageFile.filepath
    #filename = "myfile.dat"
    Nx = int(request.POST.get('Nx'))
    Ny = int(request.POST.get('Ny'))
    Nz = int(request.POST.get('Nz'))
    voxel_length = float(request.POST.get('voxel_length'))
+   # check the input data
+   input_file = os.path.join(SimPath,str(imageFile))
+   slice_file = os.path.join(SimPath,str(imageFile)+"slice.png")
+   ID = np.fromfile(input_file,dtype = np.uint8)
+   ID.shape = (Nz,Ny,Nx)
+   slice_at_x = int(Nx/2)
+   plt.figure(1)
+   plt.title(str(imageFile))
+   plt.pcolormesh(ID[:,:,slice_at_x],cmap='hot')
+   plt.grid(True)
+   plt.axis('equal')
+   plt.savefig(slice_file)
    LBPM_input_file = "Domain {\n"
    LBPM_input_file += '   filename = "'+str(filename)+'"'+"\n"
-   #LBPM_input_file += '   path = "'+str(simDir)+'"'+"\n"
+   #LBPM_input_file += '   path = "'+str(SimPath)+'"'+"\n"
    LBPM_input_file += '   voxel_length = '+str(voxel_length)+"\n"
    LBPM_input_file += "   N = "+str(Nx)+", "+str(Ny)+", "+str(Nz)+"\n"
    #LBPM_input_file += "   n = "+Nx+", "+Ny+", "+Nz+"\n"
@@ -137,7 +152,7 @@ def simulation(request):
    return render(request, 'LBPM/simulation.html', {'inputfile':LBPM_input_file})
 
    #   return HttpResponse(LBPM_input_file)
-
+   
 def get_image(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -151,7 +166,7 @@ def get_image(request):
             newimg = ImageData(image = request.FILES['image'])
             newimg.save()
             #filename = newimg.image.name
-            #filepath = newimg.image.path
+            filepath = os.path.dirname(newimg.image.path)
             #form.save()
             #Nx = request.POST.get('Nx')
             #Ny = request.POST.get('Ny')
@@ -159,7 +174,7 @@ def get_image(request):
             #voxel_length = request.POST.get('voxel_length')
             # redirect to a new URL:            
             #return HttpResponseRedirect('preview')
-            return preview_image(request)
+            return preview_image(request,filepath)
 
     # if a GET (or any other method) we'll create a blank form
     else:
