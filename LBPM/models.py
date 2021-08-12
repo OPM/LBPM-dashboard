@@ -1,7 +1,15 @@
 from django.db import models
+import uuid
+import os
+
+def get_file_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (uuid.uuid4(), ext)
+    return os.path.join('/simulations', filename)
+
 
 class ColorModel(models.Model):
-      image = models.FileField(upload_to='simulation/%Y/%m/%d')
+      image = models.FileField(upload_to='simulations/%Y/%m/%d')
       #image = models.FilePathField(path="/home/mcclurej/")
       protocol = models.CharField(max_length=256,default="Image sequence")
       Nx = models.IntegerField(default=3)
@@ -12,7 +20,21 @@ class ColorModel(models.Model):
       density_ratio = models.FloatField(default=1.0)
       interfacial_tension = models.FloatField(default=0.01)
 
-      #class Question(models.Model):
+
+class ImageData(models.Model):
+    #path = get_file_path
+    image = models.FileField(upload_to='simulations/%Y/%m/%d')
+    Nx = models.IntegerField(default=3)
+    Ny = models.IntegerField(default=3)
+    Nz = models.IntegerField(default=3)
+    voxel_length = models.IntegerField(default=1)
+#    def filename(self):
+#        return os.path.basename(self.image.name)
+#    def filepath(self):
+#        return os.path.basename(self.image.path)
+
+
+#class Question(models.Model):
 #    question_text = models.CharField(max_length=200)
 #    pub_date = models.DateTimeField('date published')
 

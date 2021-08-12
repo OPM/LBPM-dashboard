@@ -18,7 +18,7 @@ IFT_UNITS= [
 class ColorForm(forms.Form):
     #image = forms.FilePathField(path="/home/mcclurej/images")
     protocol = forms.CharField(label=mark_safe('Simulation protocol'), widget=forms.Select(choices=PROTOCOLS))
-    image = forms.FileField(
+    file = forms.FileField(
         label='Select image file',
         help_text=''
     )
@@ -44,3 +44,15 @@ class ColorForm(forms.Form):
    
         # Remember to always return the cleaned data.
         return data
+
+
+class ImageDataForm(forms.Form):
+    image = forms.FileField(
+        label='Select a file',
+        help_text='max. 1 gigabytes'
+    )
+    Nx = forms.IntegerField(label=mark_safe('<br /> <br /> Nx'),min_value=3)
+    Ny = forms.IntegerField(label=mark_safe('  Ny'),min_value=3)
+    Nz = forms.IntegerField(label=mark_safe('  Nz'),min_value=3)
+    voxel_length = forms.FloatField(label=mark_safe('<br /> <br /> Voxel length (micron)'))
+

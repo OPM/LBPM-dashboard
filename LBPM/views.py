@@ -1,14 +1,39 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.template import RequestContext
+from django.urls import reverse
+from django.http import HttpResponse
 
 from .forms import ColorForm
-from django.http import HttpResponse
+from .models import ImageData
+from .forms import ImageDataForm
 
 def index(request):
    return get_color(request)
 
+def preview_image(request):
+   imageFile = request.FILES.get('image')
+   #handle_uploaded_file(request.FILES[imageFile])
+   filename = imageFile.name
+   #simDir = imageFile.filepath
+   #filename = "myfile.dat"
+   Nx = int(request.POST.get('Nx'))
+   Ny = int(request.POST.get('Ny'))
+   Nz = int(request.POST.get('Nz'))
+   voxel_length = float(request.POST.get('voxel_length'))
+   LBPM_input_file = "Domain {\n"
+   LBPM_input_file += '   filename = "'+str(filename)+'"'+"\n"
+   #LBPM_input_file += '   path = "'+str(simDir)+'"'+"\n"
+   LBPM_input_file += '   voxel_length = '+str(voxel_length)+"\n"
+   LBPM_input_file += "   N = "+str(Nx)+", "+str(Ny)+", "+str(Nz)+"\n"
+   #LBPM_input_file += "   n = "+Nx+", "+Ny+", "+Nz+"\n"
+   #LBPM_input_file += "   nproc = 1, 1, 1 \n"
+   return render(request, 'LBPM/preview.html', {'inputfile':LBPM_input_file})
+
+
 def simulation(request):
-  # imageFile = request.FILES.get('image')
+   #imageFile = request.FILES.get('image')
+   #handle_uploaded_file(request.FILES[imageFile])
    filename = request.POST.get('image')
    protocol = request.POST.get('protocol')
    #filename = "myfile.dat"
@@ -100,6 +125,8 @@ def simulation(request):
    LBPM_input_file += "}\n"
    LBPM_input_file += "Visualization {\n"
    LBPM_input_file += "}\n"
+   LBPM_input_file += "FlowAdaptor {\n"
+   LBPM_input_file += "}\n"
    print(LBPM_input_file)
    #imageFile.save()
    #Nx = form(request.POST['Nx'])
@@ -111,6 +138,37 @@ def simulation(request):
 
    #   return HttpResponse(LBPM_input_file)
 
+def get_image(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = ImageDataForm(request.POST, request.FILES)
+        # check whether it's valid:
+        print('process image request')
+        #print(ImageDataForm())
+        if form.is_valid():
+            print("save image")
+            newimg = ImageData(image = request.FILES['image'])
+            newimg.save()
+            #filename = newimg.image.name
+            #filepath = newimg.image.path
+            #form.save()
+            #Nx = request.POST.get('Nx')
+            #Ny = request.POST.get('Ny')
+            #Nz = request.POST.get('Nz')
+            #voxel_length = request.POST.get('voxel_length')
+            # redirect to a new URL:            
+            #return HttpResponseRedirect('preview')
+            return preview_image(request)
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        print("Get image data")
+        form = ImageDataForm()
+  
+    return render(request, 'LBPM/image.html', {'form': form})
+
+   
 def get_color(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -134,3 +192,41 @@ def get_color(request):
 def show_color(request):
    return render(request)
     
+def handle_uploaded_file(f):
+    with open('some/file/name.txt', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+
+def list(request):
+    # Handle file upload
+    if request.method == 'POST':
+        form = ImageDataForm(request.POST, request.FILES)
+        if form.is_valid():
+            newimg = ImageData(image = request.FILES['file'])
+            newimg.save()
+            Nx = request.POST.get('Nx')
+            Ny = request.POST.get('Ny')
+            Nz = request.POST.get('Nz')
+            voxel_length = request.POST.get('voxel_length')
+
+            # Redirect to the document list after POST
+            #return HttpResponseRedirect(reverse('LBPM.views.list'))
+            return render(request, 'LBPM/list.html', {'form': form})
+
+    else:
+        form = ImageDataForm() # A empty, unbound form
+
+    # Load documents for the list page
+    all_images = ImageData.objects.all()
+
+    # Render list page with the documents and the form
+    return render(request, 'LBPM/list.html', {'form': form})
+    
+    #return render_to_response(
+    #    'LBPM/list.html',
+    #    {'images': all_images, 'form': form},
+    #    context_instance=RequestContext(request)
+    #)
+
+ 

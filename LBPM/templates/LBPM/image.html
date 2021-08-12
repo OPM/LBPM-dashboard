@@ -1,0 +1,21 @@
+<!-- Upload form. Note enctype attribute! 
+<form action="{% url 'image' %}" method="post" enctype="multipart/form-data">
+       {% csrf_token %}
+       <p>{{ form.non_field_errors }}</p>
+       <p>{{ form.image.label_tag }} {{ form.image.help_text }}</p>
+       <p>
+            {{ form.image.errors }}
+            {{ form.image }}
+        </p>
+        <p><input type="submit" value="Upload" /></p>
+</form>
+-->
+
+
+<form action="image" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form }}
+    {{my_field.label|linebreaks}}
+    <input type="submit" value="Upload">
+</form>
+
