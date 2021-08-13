@@ -1,5 +1,6 @@
 <form action="/LBPM/simulation" method="post">
     {% csrf_token %}
+    <input type="hidden" name="input" value="{{ inputfile }}" />
     {{ form }}
     {{my_field.label|linebreaks}}
     <input type="submit" value="Submit">

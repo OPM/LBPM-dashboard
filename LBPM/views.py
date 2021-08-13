@@ -33,8 +33,8 @@ def preview_slice(request, SimPath):
    Nz = int(request.POST.get('Nz'))
    [npx, npy, npz, nx, ny, nz] = domain_decomp(Nx, Ny, Nz, 4)
    voxel_length = float(request.POST.get('voxel_length'))
-   # check the input data                                                                                                 
-   
+   # check the input image                                    
+
    input_file = os.path.join(SimPath,str(imageFile))
    slice_file = os.path.join(SimPath,str(imageFile)+"slice.png")
    ID = np.fromfile(input_file,dtype = np.uint8)
@@ -51,7 +51,7 @@ def preview_slice(request, SimPath):
 
 def preview_image(request, SimPath):
    imageFile = request.FILES.get('image')
-   #handle_uploaded_file(request.FILES[imageFile])                                                                         
+   #handle_uploaded_file(request.FILES[imageFile])                             
    filename = imageFile.name
    #filename = "myfile.dat"
    Nx = int(request.POST.get('Nx'))
@@ -60,6 +60,7 @@ def preview_image(request, SimPath):
    [npx, npy, npz, nx, ny, nz] = domain_decomp(Nx, Ny, Nz, 4)
    voxel_length = float(request.POST.get('voxel_length'))
    # check the input data
+   input_db = os.path.join(SimPath,"input.db")
    input_file = os.path.join(SimPath,str(imageFile))
    slice_file = os.path.join(SimPath,str(imageFile)+"slice.png")
    ID = np.fromfile(input_file,dtype = np.uint8)
@@ -84,19 +85,19 @@ def preview_image(request, SimPath):
    LBPM_input_file += "   nproc = "+str(npx)+", "+str(npy)+", "+str(npz)+"\n"
    #LBPM_input_file += "   n = "+Nx+", "+Ny+", "+Nz+"\n"
    #LBPM_input_file += "   nproc = 1, 1, 1 \n"
-   return render(request, 'LBPM/preview.html', {'inputfile':LBPM_input_file, 'slice':relative_path})
+   create_input_database(input_db,LBPM_input_file)
+   return render(request, 'LBPM/preview.html', {'inputfile':input_db, 'slice':relative_path})
 
 
 def simulation(request):
-   #imageFile = request.FILES.get('image')
-   #handle_uploaded_file(request.FILES[imageFile])
-   filename = request.POST.get('image')
+   input_db=request.POST.get('input',"input.db")
+   print(input_db)
+   #input_db = request.POST.get('inputfile')
    protocol = request.POST.get('protocol')
-   #filename = "myfile.dat"
-   Nx = request.POST.get('Nx')
-   Ny = request.POST.get('Ny')
-   Nz = request.POST.get('Nz')
-   voxel_length = request.POST.get('voxel_length')
+   #Nx = request.POST.get('Nx')
+   #Ny = request.POST.get('Ny')
+   #Nz = request.POST.get('Nz')
+   #voxel_length = request.POST.get('voxel_length')
    capillary_number = float(request.POST.get('capillary_number'))
    viscosity_ratio = float(request.POST.get('viscosity_ratio'))
    density_ratio = float(request.POST.get('density_ratio'))
@@ -147,12 +148,13 @@ def simulation(request):
       Fx = 0.0
       Fy = 0.0
       Fz = 1.0e-5
-   LBPM_input_file = "Domain {\n"
-   LBPM_input_file += '   filename = "'+filename+'"'+"\n"
-   LBPM_input_file += '   voxel_length = '+voxel_length+"\n"
-   LBPM_input_file += "   N = "+Nx+", "+Ny+", "+Nz+"\n"
-   LBPM_input_file += "   n = "+Nx+", "+Ny+", "+Nz+"\n"
-   LBPM_input_file += "   nproc = 1, 1, 1 \n"
+   #LBPM_input_file = "Domain {\n"
+   #LBPM_input_file += '   filename = "'+filename+'"'+"\n"
+   #LBPM_input_file += '   voxel_length = '+voxel_length+"\n"
+   #LBPM_input_file += "   N = "+Nx+", "+Ny+", "+Nz+"\n"
+   #LBPM_input_file += "   n = "+Nx+", "+Ny+", "+Nz+"\n"
+   #LBPM_input_file += "   nproc = 1, 1, 1 \n"
+   LBPM_input_file = "   # keys below set by color model\n"
    LBPM_input_file += '   BC = '+str(BC)+"\n"
    if protocol == "Steady-state relperm" :
       LBPM_input_file += "   InletLayers = 0, 0, 5 \n"
@@ -184,6 +186,8 @@ def simulation(request):
    LBPM_input_file += "FlowAdaptor {\n"
    LBPM_input_file += "}\n"
    print(LBPM_input_file)
+   write_input_database(input_db,LBPM_input_file)
+   LBPM_input_file = read_input_database(input_db)
    #imageFile.save()
    #Nx = form(request.POST['Nx'])
    print("Capillary number = %s" % str(capillary_number))
@@ -208,7 +212,7 @@ def get_image(request):
             newimg.save()
             #filename = newimg.image.name
             filepath = os.path.dirname(newimg.image.path)
-            #form.save()
+            #form.save() # this only works with ModelForm
             #Nx = request.POST.get('Nx')
             #Ny = request.POST.get('Ny')
             #Nz = request.POST.get('Nz')
@@ -244,8 +248,6 @@ def get_color(request):
     # if a GET (or any other method) we'll create a blank form
     else:
         print("Get color data")
-        LBPM_input_file=request.POST.get("domain", "")
-        print(LBPM_input_file)
         form = ColorForm()
   
     return render(request, 'LBPM/color.html', {'form': form})
@@ -260,10 +262,13 @@ def handle_uploaded_file(f):
 
 def get_color_with_domain(request):
    print("Get color data")
-   LBPM_input_file=request.POST.get('domain',"got nothing")
-   print(LBPM_input_file)
+   input_filename=request.POST.get('domain',"got nothing")
+   print(input_filename)
+   #input_db = forms.FilePathField(path=input_filename)
+   #form.fields['inputfile'].widget = forms.HiddenInput()
+   #initial={'inputfile':input_filename}
    form = ColorForm()
-   return render(request, 'LBPM/color.html', {'form': form})
+   return render(request, 'LBPM/color.html', {'form': form, 'inputfile':input_filename})
 
 def show_color(request):
    return render(request)

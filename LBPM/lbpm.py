@@ -4,6 +4,21 @@ import matplotlib.pylab as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from django.http import HttpResponse
 
+def create_input_database(filename, content):
+   infile = open(filename,'w')
+   infile.write(content)
+   infile.close()
+
+def write_input_database(filename, content):
+   infile = open(filename,'a')
+   infile.write(content)
+   infile.close()
+
+def read_input_database(filename):
+   infile = open(filename,'r')
+   content = infile.read()
+   return content
+
 def view_slice(request):
    response = HttpResponse(content_type = 'image/png')
    imageFile = request.FILES.get('image')

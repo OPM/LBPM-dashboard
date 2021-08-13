@@ -1,18 +1,5 @@
-<!---
-<pre>
-{{ inputfile }}
-<img class='img-responsive' src="/{{ slice }}" />
-<input type="submit" value="Accept">
-<input type="button" onclick="history.go(-1);" value="Back to data upload">
-</pre>
-  <button name="name" value="value" type="submit">Accept</button>
-  <input type="button" value="Accept">
--->
-
-
 <form action="color" method="post">
   {% csrf_token %}
-  {{ inputfile }}
   <img class='img-responsive' src="/{{ slice }}" />
   <button name="domain" type="submit" value="{{ inputfile }}">Accept</button>
   <input type="button" onclick="history.go(-1);" value="Back to data upload">
