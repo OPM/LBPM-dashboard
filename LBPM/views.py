@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template import RequestContext
@@ -7,22 +8,56 @@ from django.http import HttpResponse
 from .forms import ColorForm
 from .models import ImageData
 from .forms import ImageDataForm
+from .lbpm import *
 
 import os
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pylab as plt
 
 def index(request):
    return get_color(request)
 
+
+def preview_slice(request, SimPath):
+   response = HttpResponseRedirect('LBPM/preview.html', content_type = 'image/png')
+   imageFile = request.FILES.get('image')
+   #handle_uploaded_file(request.FILES[imageFile])                                                                      
+      
+   filename = imageFile.name
+   #filename = "myfile.dat"                                                                                              
+      
+   Nx = int(request.POST.get('Nx'))
+   Ny = int(request.POST.get('Ny'))
+   Nz = int(request.POST.get('Nz'))
+   [npx, npy, npz, nx, ny, nz] = domain_decomp(Nx, Ny, Nz, 4)
+   voxel_length = float(request.POST.get('voxel_length'))
+   # check the input data                                                                                                 
+   
+   input_file = os.path.join(SimPath,str(imageFile))
+   slice_file = os.path.join(SimPath,str(imageFile)+"slice.png")
+   ID = np.fromfile(input_file,dtype = np.uint8)
+   ID.shape = (Nz,Ny,Nx)
+   slice_at_x = int(Nx/2)
+   plt.figure(1)
+   plt.title(str(imageFile))
+   plt.pcolormesh(ID[:,:,slice_at_x],cmap='hot')
+   plt.grid(True)
+   plt.axis('equal')
+   plt.savefig(response)
+   return response
+
+
 def preview_image(request, SimPath):
    imageFile = request.FILES.get('image')
-   #handle_uploaded_file(request.FILES[imageFile])
+   #handle_uploaded_file(request.FILES[imageFile])                                                                         
    filename = imageFile.name
    #filename = "myfile.dat"
    Nx = int(request.POST.get('Nx'))
    Ny = int(request.POST.get('Ny'))
    Nz = int(request.POST.get('Nz'))
+   [npx, npy, npz, nx, ny, nz] = domain_decomp(Nx, Ny, Nz, 4)
    voxel_length = float(request.POST.get('voxel_length'))
    # check the input data
    input_file = os.path.join(SimPath,str(imageFile))
@@ -36,14 +71,20 @@ def preview_image(request, SimPath):
    plt.grid(True)
    plt.axis('equal')
    plt.savefig(slice_file)
+
+   #response = view_slice(request)
+   relative_path = os.path.relpath(slice_file,settings.BASE_DIR)
+
    LBPM_input_file = "Domain {\n"
    LBPM_input_file += '   filename = "'+str(filename)+'"'+"\n"
    #LBPM_input_file += '   path = "'+str(SimPath)+'"'+"\n"
    LBPM_input_file += '   voxel_length = '+str(voxel_length)+"\n"
    LBPM_input_file += "   N = "+str(Nx)+", "+str(Ny)+", "+str(Nz)+"\n"
+   LBPM_input_file += "   n = "+str(nx)+", "+str(ny)+", "+str(nz)+"\n"
+   LBPM_input_file += "   nproc = "+str(npx)+", "+str(npy)+", "+str(npz)+"\n"
    #LBPM_input_file += "   n = "+Nx+", "+Ny+", "+Nz+"\n"
    #LBPM_input_file += "   nproc = 1, 1, 1 \n"
-   return render(request, 'LBPM/preview.html', {'inputfile':LBPM_input_file})
+   return render(request, 'LBPM/preview.html', {'inputfile':LBPM_input_file, 'slice':relative_path})
 
 
 def simulation(request):
@@ -175,6 +216,7 @@ def get_image(request):
             # redirect to a new URL:            
             #return HttpResponseRedirect('preview')
             return preview_image(request,filepath)
+            #return preview_slice(request,filepath) ValueError here
 
     # if a GET (or any other method) we'll create a blank form
     else:

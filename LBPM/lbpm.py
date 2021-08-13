@@ -1,4 +1,34 @@
 import numpy as np
+from matplotlib.figure import Figure
+import matplotlib.pylab as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from django.http import HttpResponse
+
+def view_slice(request):
+   response = HttpResponse(content_type = 'image/png')
+   imageFile = request.FILES.get('image')
+   #handle_uploaded_file(request.FILES[imageFile])                                                                         
+   filename = imageFile.name
+   #filename = "myfile.dat"                                                                                                
+   Nx = int(request.POST.get('Nx'))
+   Ny = int(request.POST.get('Ny'))
+   Nz = int(request.POST.get('Nz'))
+   [npx, npy, npz, nx, ny, nz] = domain_decomp(Nx, Ny, Nz, 4)
+   voxel_length = float(request.POST.get('voxel_length'))
+   # check the input data                                                                                                  
+   input_file = os.path.join(SimPath,str(imageFile))
+   slice_file = os.path.join(SimPath,str(imageFile)+"slice.png")
+   ID = np.fromfile(input_file,dtype = np.uint8)
+   ID.shape = (Nz,Ny,Nx)
+   slice_at_x = int(Nx/2)
+   plt.figure(1)
+   plt.title(str(imageFile))
+   plt.pcolormesh(ID[:,:,slice_at_x],cmap='hot')
+   plt.grid(True)
+   plt.axis('equal')
+   plt.savefig(response)
+   return response
+
 
 def domain_decomp(Nx, Ny, Nz, nprocs):
     nprocx = 1
