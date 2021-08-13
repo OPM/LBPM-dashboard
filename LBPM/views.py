@@ -225,6 +225,8 @@ def get_image(request):
   
     return render(request, 'LBPM/image.html', {'form': form})
 
+def get_input(request):
+   return HttpResponseRedirect('LBPM/input.html')
    
 def get_color(request):
     # if this is a POST request we need to process the form data
@@ -242,9 +244,26 @@ def get_color(request):
     # if a GET (or any other method) we'll create a blank form
     else:
         print("Get color data")
+        LBPM_input_file=request.POST.get("domain", "")
+        print(LBPM_input_file)
         form = ColorForm()
   
     return render(request, 'LBPM/color.html', {'form': form})
+
+def show_color(request):
+   return render(request)
+    
+def handle_uploaded_file(f):
+    with open('some/file/name.txt', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+def get_color_with_domain(request):
+   print("Get color data")
+   LBPM_input_file=request.POST.get('domain',"got nothing")
+   print(LBPM_input_file)
+   form = ColorForm()
+   return render(request, 'LBPM/color.html', {'form': form})
 
 def show_color(request):
    return render(request)

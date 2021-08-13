@@ -10,8 +10,9 @@ from . import views
 urlpatterns = [
     path('index', views.index, name='index'),
     path('preview', views.preview_image, name='preview'),
+    path('input', views.get_input, name='input'),
     path('image', views.get_image, name='image'),
-    path('color', views.get_color, name='color'),
+    path('color', views.get_color_with_domain, name='color'),
     path('simulation', views.simulation, name='simulation'),
     path('list', views.list, name='list'),
     #path('list/<int:year>/', views.year_archive),
