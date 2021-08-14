@@ -57,7 +57,7 @@ def preview_image(request, SimPath):
    Nx = int(request.POST.get('Nx'))
    Ny = int(request.POST.get('Ny'))
    Nz = int(request.POST.get('Nz'))
-   [npx, npy, npz, nx, ny, nz] = domain_decomp(Nx, Ny, Nz, 4)
+   [nx, ny, nz, npx, npy, npz] = domain_decomp(Nx, Ny, Nz, 4)
    voxel_length = float(request.POST.get('voxel_length'))
    # check the input data
    input_db = os.path.join(SimPath,"input.db")
@@ -73,18 +73,26 @@ def preview_image(request, SimPath):
    plt.axis('equal')
    plt.savefig(slice_file)
 
-   #response = view_slice(request)
+   read_values = np.unique(ID)
+   print(read_values)
+
    relative_path = os.path.relpath(slice_file,settings.BASE_DIR)
 
    LBPM_input_file = "Domain {\n"
-   LBPM_input_file += '   filename = "'+str(filename)+'"'+"\n"
-   #LBPM_input_file += '   path = "'+str(SimPath)+'"'+"\n"
+   LBPM_input_file += '   Filename = "'+str(filename)+'"'+"\n"
    LBPM_input_file += '   voxel_length = '+str(voxel_length)+"\n"
    LBPM_input_file += "   N = "+str(Nx)+", "+str(Ny)+", "+str(Nz)+"\n"
    LBPM_input_file += "   n = "+str(nx)+", "+str(ny)+", "+str(nz)+"\n"
-   LBPM_input_file += "   nproc = "+str(npx)+", "+str(npy)+", "+str(npz)+"\n"
-   #LBPM_input_file += "   n = "+Nx+", "+Ny+", "+Nz+"\n"
-   #LBPM_input_file += "   nproc = 1, 1, 1 \n"
+   LBPM_input_file += "   nproc = "+str(npx)+", "+str(npy)+", "+str(npz)+"\n"  
+   LBPM_input_file += '   ReadType ="8bit"'+"\n"
+   LBPM_input_file += "   ReadValues = "
+   for value in read_values :
+      LBPM_input_file +=   str(value) + ", "
+   LBPM_input_file += "\n"
+   LBPM_input_file += "   WriteValues = "
+   for value in read_values :
+      LBPM_input_file +=   str(value) + ", "
+   LBPM_input_file += "\n"
    create_input_database(input_db,LBPM_input_file)
    return render(request, 'LBPM/preview.html', {'inputfile':input_db, 'slice':relative_path})
 
@@ -154,7 +162,7 @@ def simulation(request):
    #LBPM_input_file += "   N = "+Nx+", "+Ny+", "+Nz+"\n"
    #LBPM_input_file += "   n = "+Nx+", "+Ny+", "+Nz+"\n"
    #LBPM_input_file += "   nproc = 1, 1, 1 \n"
-   LBPM_input_file = "   # keys below set by color model\n"
+   LBPM_input_file = "   // keys below set by color model\n"
    LBPM_input_file += '   BC = '+str(BC)+"\n"
    if protocol == "Steady-state relperm" :
       LBPM_input_file += "   InletLayers = 0, 0, 5 \n"
@@ -166,9 +174,13 @@ def simulation(request):
    LBPM_input_file += "Color {\n"   
    #LBPM_input_file += '   protocol = "'+protocol+'"'+"\n"
    if protocol == "Steady-state relperm" :
-      LBPM_input_file += '   protocol = "shell aggregation"'+"\n"
+      LBPM_input_file += '   protocol = "fractional flow"'+"\n"
    elif protocol ==  "Image sequence" :
       LBPM_input_file += '   protocol = "image sequence"'+"\n"
+   elif protocol ==  "Centrifuge" :
+      LBPM_input_file += '   protocol = "centrifuge"'+"\n"
+   elif protocol ==  "Core flooding" :
+      LBPM_input_file += '   protocol = "core flooding"'+"\n"
    LBPM_input_file += '   rhoA = '+str(rho_n)+"\n"
    LBPM_input_file += '   rhoB = '+str(rho_w)+"\n"
    LBPM_input_file += '   tauA = '+str(tau_n)+"\n"
@@ -176,14 +188,34 @@ def simulation(request):
    LBPM_input_file += '   alpha = '+str(alpha)+"\n"
    LBPM_input_file += '   beta = '+str(beta)+"\n"
    LBPM_input_file += "   F = "+str(Fx)+", "+str(Fy)+", "+str(Fz)+"\n"
+   # NEED TO RETHINK THE COMPONENT LABEL ASSIGNMENT
+   LBPM_input_file += "   ComponentLabels = 0\n"
+   LBPM_input_file += "   ComponentAffinity = 1.0\n"
+   LBPM_input_file += '   WettingConvention = "SCAL"'+"\n"
    if protocol == "Core flooding" :
       LBPM_input_file += "   flux = "+str(flux)+"\n"
    LBPM_input_file += "}\n"
    LBPM_input_file += "Analysis {\n"
+   LBPM_input_file += '   analysis_interval = 1000'+"\n"
+   LBPM_input_file += "   restart_interval = 10000000\n"
+   LBPM_input_file += '   restart_file = "Restart"'+"\n"
+   if protocol != "Steady-state relperm" :
+      LBPM_input_file += '   subphase_analysis_interval = 5000'+"\n"
    LBPM_input_file += "}\n"
    LBPM_input_file += "Visualization {\n"
+   LBPM_input_file += '   write_silo = false'+"\n"
+   if protocol == "Steady-state relperm" :
+      LBPM_input_file += '   visualization_interval = 5000000'+"\n"
+   else :
+      LBPM_input_file += '   visualization_interval = 500000'+"\n"
    LBPM_input_file += "}\n"
    LBPM_input_file += "FlowAdaptor {\n"
+   if protocol == "Steady-state relperm" :
+      LBPM_input_file += '   max_steady_timesteps = 200000'+"\n"
+      LBPM_input_file += '   min_steady_timesteps = 100000'+"\n"
+      LBPM_input_file += '   fractional_flow_increment = 0.1'+"\n"
+      LBPM_input_file += '   mass_fraction_factor = 0.0002'+"\n"
+      LBPM_input_file += '   endpoint_threshold = 0.1'+"\n"
    LBPM_input_file += "}\n"
    print(LBPM_input_file)
    write_input_database(input_db,LBPM_input_file)
