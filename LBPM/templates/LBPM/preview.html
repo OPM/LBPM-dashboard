@@ -1,7 +1,22 @@
+<!---
 <form action="color" method="post">
   {% csrf_token %}
   <img class='img-responsive' src="/{{ slice }}" />
   <button name="domain" type="submit" value="{{ inputfile }}">Accept</button>
   <input type="button" onclick="history.go(-1);" value="Back to data upload">
 </form>
+-->
+
+<form action="color" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+  <img class='img-responsive' src="/{{ slice }}" />
+    {% for form in formset %}
+        <table>
+            {{ form }}
+        </table>
+    {% endfor %}
+  <button name="domain" type="submit" value="{{ inputfile }}">Accept</button>
+  <input type="button" onclick="history.go(-1);" value="Back to data upload">
+</form>
+
 

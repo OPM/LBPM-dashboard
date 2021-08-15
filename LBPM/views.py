@@ -27,8 +27,7 @@ def preview_slice(request, SimPath):
    #handle_uploaded_file(request.FILES[imageFile])                                                                      
       
    filename = imageFile.name
-   #filename = "myfile.dat"                                                                                              
-      
+   #filename = "myfile.dat"                                                                                            
    Nx = int(request.POST.get('Nx'))
    Ny = int(request.POST.get('Ny'))
    Nz = int(request.POST.get('Nz'))
@@ -50,7 +49,8 @@ def preview_slice(request, SimPath):
    return response
 
 def get_image_labels(request):
-    ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('value','voxel_class'),extra=8)
+    value_count = 3
+    ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('value','voxel_class'),extra=value_count)
     if request.method == 'POST':
         formset = ImageLabelFormSet(request.POST, request.FILES)
         if formset.is_valid():
@@ -87,6 +87,11 @@ def preview_image(request, SimPath):
    plt.savefig(slice_file)
 
    read_values = np.unique(ID)
+   value_count = read_values.size
+   ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('value','voxel_class'),extra=value_count)
+
+   formset = ImageLabelFormSet()
+   
    print(read_values)
 
    relative_path = os.path.relpath(slice_file,settings.BASE_DIR)
@@ -107,7 +112,7 @@ def preview_image(request, SimPath):
       LBPM_input_file +=   str(value) + ", "
    LBPM_input_file += "\n"
    create_input_database(input_db,LBPM_input_file)
-   return render(request, 'LBPM/preview.html', {'inputfile':input_db, 'slice':relative_path})
+   return render(request, 'LBPM/preview.html', {'inputfile':input_db, 'slice':relative_path, 'formset':formset})
 
 
 def simulation(request):
