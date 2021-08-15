@@ -4,9 +4,11 @@ from django.shortcuts import render
 from django.template import RequestContext
 from django.urls import reverse
 from django.http import HttpResponse
+from django.forms import modelformset_factory
 
 from .forms import ColorForm
 from .models import ImageData
+from .models import VoxelLabel
 from .forms import ImageDataForm
 from .lbpm import *
 
@@ -18,7 +20,6 @@ import matplotlib.pylab as plt
 
 def index(request):
    return get_color(request)
-
 
 def preview_slice(request, SimPath):
    response = HttpResponseRedirect('LBPM/preview.html', content_type = 'image/png')
@@ -48,6 +49,16 @@ def preview_slice(request, SimPath):
    plt.savefig(response)
    return response
 
+def get_image_labels(request):
+    ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('voxel_class','value'))
+    if request.method == 'POST':
+        formset = ImageLabelFormSet(request.POST, request.FILES)
+        if formset.is_valid():
+            formset.save()
+            # do something.
+    else:
+        formset = ImageLabelFormSet()
+    return render(request, 'LBPM/image_labels.html', {'formset': formset})
 
 def preview_image(request, SimPath):
    imageFile = request.FILES.get('image')
@@ -130,7 +141,7 @@ def simulation(request):
    else :
       nu_n = nu
       tau_n = tau
-      nu_w = nu_n*kinematic_viscosity_ratio
+      nu_w = nu_n/kinematic_viscosity_ratio
       tau_w = 3*nu_w + 0.5
    if nu_w > 1.5 :
       print("Warning: phase w kinematic viscosity too high!")

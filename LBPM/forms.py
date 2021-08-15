@@ -17,6 +17,12 @@ IFT_UNITS= [
     ('mN/m', 'mN/m')
     ]
 
+class VoxelLabelForm(forms.ModelForm):
+    class Meta:
+        model = VoxelLabel
+        fields = ['voxel_class', 'value']
+
+
 class ColorForm(forms.Form):
     #inputfile = forms.FilePathField()
     protocol = forms.CharField(label=mark_safe('Simulation protocol'), widget=forms.Select(choices=PROTOCOLS))

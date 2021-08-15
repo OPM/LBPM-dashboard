@@ -19,6 +19,28 @@ class ColorModel(models.Model):
       density_ratio = models.FloatField(default=1.0)
       interfacial_tension = models.FloatField(default=0.01)
 
+class VoxelLabel(models.Model):
+    SOLID = 'S'
+    WATER = 'W'
+    OIL = 'N'
+    GAS = 'G'
+    MICROPOROS = 'M'
+    LABEL_CLASS = [
+        (SOLID, 'Solid'),
+        (WATER, 'Water'),
+        (OIL, 'Oil'),
+        (GAS, 'Gas'),
+        (MICROPOROS, 'Micro-porosity'),
+    ]
+    voxel_class = models.CharField(
+        max_length = 1,
+        choices = LABEL_CLASS,
+        default = WATER,
+    )
+    value = models.SmallIntegerField(
+        default = 1
+    )
+    
 
 class ImageData(models.Model):
     #path = get_file_path
