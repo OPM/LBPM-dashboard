@@ -1,3 +1,18 @@
-<form method="post">
-    {{ formset }}
+<form action="image" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for form in formset %}
+        <table>
+            {{ form }}
+        </table>
+    {% endfor %}
+    <input type="submit" value="Accept">
 </form>
+
+
+
+<!--
+    {{ formset.as_table }}
+<form method="post">
+    {{formset|linebreaks}}
+</form>
+-->

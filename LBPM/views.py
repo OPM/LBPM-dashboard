@@ -50,12 +50,14 @@ def preview_slice(request, SimPath):
    return response
 
 def get_image_labels(request):
-    ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('voxel_class','value'))
+    ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('value','voxel_class'),extra=8)
     if request.method == 'POST':
         formset = ImageLabelFormSet(request.POST, request.FILES)
         if formset.is_valid():
             formset.save()
             # do something.
+            for form in formset:
+               print(form)
     else:
         formset = ImageLabelFormSet()
     return render(request, 'LBPM/image_labels.html', {'formset': formset})
