@@ -343,7 +343,7 @@ def get_color_with_domain(request):
    WriteValues = []
    ComponentAffinity = []
    ComponentLabels = []
-   solid_label = 128
+   solid_label = 0
    fluid_label = 1
    for form in formset:
       label_value = form['value'].value()
@@ -366,7 +366,7 @@ def get_color_with_domain(request):
          WriteValues = np.append(WriteValues,solid_label)
          ComponentLabels = np.append(ComponentLabels,solid_label)
          ComponentAffinity = np.append(ComponentAffinity,label_affinity)
-         solid_label = solid_label + 1
+         solid_label = solid_label - 1
          
       print(form['value'].value())
       print(form['voxel_class'].value())
