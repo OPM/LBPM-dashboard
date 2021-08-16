@@ -116,8 +116,8 @@ def preview_image(request, SimPath):
    LBPM_input_file += '   Filename = "'+str(filename)+'"'+"\n"
    LBPM_input_file += '   voxel_length = '+str(voxel_length)+"\n"
    LBPM_input_file += "   N = "+str(Nx)+", "+str(Ny)+", "+str(Nz)+"\n"
-   LBPM_input_file += "   n = "+str(nx)+", "+str(ny)+", "+str(nz)+"\n"
-   LBPM_input_file += "   nproc = "+str(npx)+", "+str(npy)+", "+str(npz)+"\n"  
+   LBPM_input_file += "   n = "+str(int(nx))+", "+str(int(ny))+", "+str(int(nz))+"\n"
+   LBPM_input_file += "   nproc = "+str(int(npx))+", "+str(int(npy))+", "+str(int(npz))+"\n"  
    LBPM_input_file += '   ReadType ="8bit"'+"\n"
    LBPM_input_file += "   ReadValues = "
    for value in read_values :
