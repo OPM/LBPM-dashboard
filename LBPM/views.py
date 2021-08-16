@@ -128,7 +128,6 @@ def preview_image(request, SimPath):
    create_input_database(input_db,LBPM_input_file)
    return render(request, 'LBPM/preview.html', {'inputfile':input_db, 'slice':relative_path, 'formset':formset})
 
-
 def simulation(request):
    input_db=request.POST.get('input',"input.db")
    print(input_db)
@@ -311,6 +310,11 @@ def get_color(request):
 
     # if a GET (or any other method) we'll create a blank form
     else:
+        value_count = 3
+        #ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('voxel_class','value','affinity'),extra=value_count)
+        #formset=ImageLabelFormSet(request.POST)
+        for form in formset:
+           print(form)
         print("Get color data")
         form = ColorForm()
   
