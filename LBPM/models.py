@@ -40,6 +40,9 @@ class VoxelLabel(models.Model):
     value = models.SmallIntegerField(
         default = 1
     )
+    affinity = models.FloatField(
+        default = 0.9
+    )
     
 
 class ImageData(models.Model):

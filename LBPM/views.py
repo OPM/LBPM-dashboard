@@ -79,20 +79,34 @@ def preview_image(request, SimPath):
    ID = np.fromfile(input_file,dtype = np.uint8)
    ID.shape = (Nz,Ny,Nx)
    slice_at_x = int(Nx/2)
+
+   read_values = np.unique(ID)
+   value_count = read_values.size
+   cmap = matplotlib.cm.get_cmap("hot", value_count)
+
    plt.figure(1)
    plt.title(str(imageFile))
-   plt.pcolormesh(ID[:,:,slice_at_x],cmap='hot')
+   plt.pcolormesh(ID[:,:,slice_at_x],cmap=cmap)
+   cbar=plt.colorbar()
+   cbar.set_ticks(read_values)
+   cbar.set_ticklabels(read_values)
    plt.grid(True)
    plt.axis('equal')
    plt.savefig(slice_file)
 
-   read_values = np.unique(ID)
-   value_count = read_values.size
-   ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('value','voxel_class'),extra=value_count)
-
-   formset = ImageLabelFormSet()
+   ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('voxel_class','value','affinity'),extra=value_count)
    
-   print(read_values)
+   formset = ImageLabelFormSet()
+   #index = 0
+   #for form in formset:
+   #   if form.is_valid():
+   #      val = read_values[index]
+   #      form.cleaned_data['value'] = val
+   #      index = index +1
+   #      print(index)
+   #      print(form)
+
+   #print(read_values)
 
    relative_path = os.path.relpath(slice_file,settings.BASE_DIR)
 
