@@ -2,6 +2,8 @@ from django.db import models
 import uuid
 import os
 
+from .lbpm import *
+
 def get_file_path(instance, filename):
     ext = filename.split('.')[-1]
     filename = "%s.%s" % (uuid.uuid4(), ext)
@@ -46,8 +48,9 @@ class VoxelLabel(models.Model):
     
 
 class ImageData(models.Model):
-    #path = get_file_path
     image = models.FileField(upload_to='simulations/%Y/%m/%d')
+    #image = models.FileField(upload_to=generate_upload_path)
+    #generate_upload_path(instance, filename)
     Nx = models.IntegerField(default=3)
     Ny = models.IntegerField(default=3)
     Nz = models.IntegerField(default=3)

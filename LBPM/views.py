@@ -74,12 +74,14 @@ def preview_image(request, SimPath):
    voxel_length = float(request.POST.get('voxel_length'))
    # check the input data
    input_db = os.path.join(SimPath,"input.db")
+   domain_db = input_db+".domain"
+   color_db = input_db+".color"
    input_file = os.path.join(SimPath,str(imageFile))
+   # generate a slice
    slice_file = os.path.join(SimPath,str(imageFile)+"slice.png")
    ID = np.fromfile(input_file,dtype = np.uint8)
    ID.shape = (Nz,Ny,Nx)
    slice_at_x = int(Nx/2)
-
    read_values = np.unique(ID)
    value_count = read_values.size
    cmap = matplotlib.cm.get_cmap("hot", value_count)
@@ -125,18 +127,17 @@ def preview_image(request, SimPath):
    for value in read_values :
       LBPM_input_file +=   str(value) + ", "
    LBPM_input_file += "\n"
-   create_input_database(input_db,LBPM_input_file)
+   create_input_database(domain_db,LBPM_input_file)
    return render(request, 'LBPM/preview.html', {'inputfile':input_db, 'slice':relative_path, 'formset':formset})
 
 def simulation(request):
    input_db=request.POST.get('input',"input.db")
    print(input_db)
-   #input_db = request.POST.get('inputfile')
+   # separate files for database sections
+   domain_db = input_db+".domain"
+   color_db = input_db+".color"
+   # get key values from form
    protocol = request.POST.get('protocol')
-   #Nx = request.POST.get('Nx')
-   #Ny = request.POST.get('Ny')
-   #Nz = request.POST.get('Nz')
-   #voxel_length = request.POST.get('voxel_length')
    capillary_number = float(request.POST.get('capillary_number'))
    viscosity_ratio = float(request.POST.get('viscosity_ratio'))
    density_ratio = float(request.POST.get('density_ratio'))
@@ -187,23 +188,21 @@ def simulation(request):
       Fx = 0.0
       Fy = 0.0
       Fz = 1.0e-5
-   #LBPM_input_file = "Domain {\n"
-   #LBPM_input_file += '   filename = "'+filename+'"'+"\n"
-   #LBPM_input_file += '   voxel_length = '+voxel_length+"\n"
-   #LBPM_input_file += "   N = "+Nx+", "+Ny+", "+Nz+"\n"
-   #LBPM_input_file += "   n = "+Nx+", "+Ny+", "+Nz+"\n"
-   #LBPM_input_file += "   nproc = 1, 1, 1 \n"
-   LBPM_input_file = "   // keys below set by color model\n"
-   LBPM_input_file += '   BC = '+str(BC)+"\n"
+
+   LBPM_domain_file = read_input_database(domain_db)
+   LBPM_domain_file += "   // keys below set by color model\n"
+   LBPM_domain_file += '   BC = '+str(BC)+"\n"
    if protocol == "Steady-state relperm" :
-      LBPM_input_file += "   InletLayers = 0, 0, 5 \n"
-      LBPM_input_file += "   OutletLayers = 0, 0, 5 \n"
+      LBPM_domain_file += "   InletLayers = 0, 0, 5 \n"
+      LBPM_domain_file += "   OutletLayers = 0, 0, 5 \n"
    elif protocol == "Image sequence" :
-      LBPM_input_file += "   InletLayers = 0, 0, 5 \n"
-      LBPM_input_file += "   OutletLayers = 0, 0, 5 \n"
-   LBPM_input_file += "}\n"
-   LBPM_input_file += "Color {\n"   
+      LBPM_domain_file += "   InletLayers = 0, 0, 5 \n"
+      LBPM_domain_file += "   OutletLayers = 0, 0, 5 \n"
+   LBPM_domain_file += "}\n"
+   create_input_database(domain_db,LBPM_domain_file)
+
    #LBPM_input_file += '   protocol = "'+protocol+'"'+"\n"
+   LBPM_input_file = read_input_database(color_db)
    if protocol == "Steady-state relperm" :
       LBPM_input_file += '   protocol = "fractional flow"'+"\n"
    elif protocol ==  "Image sequence" :
@@ -219,10 +218,6 @@ def simulation(request):
    LBPM_input_file += '   alpha = '+str(alpha)+"\n"
    LBPM_input_file += '   beta = '+str(beta)+"\n"
    LBPM_input_file += "   F = "+str(Fx)+", "+str(Fy)+", "+str(Fz)+"\n"
-   # NEED TO RETHINK THE COMPONENT LABEL ASSIGNMENT
-   LBPM_input_file += "   ComponentLabels = 0\n"
-   LBPM_input_file += "   ComponentAffinity = 1.0\n"
-   LBPM_input_file += '   WettingConvention = "SCAL"'+"\n"
    if protocol == "Core flooding" :
       LBPM_input_file += "   flux = "+str(flux)+"\n"
    LBPM_input_file += "}\n"
@@ -249,7 +244,10 @@ def simulation(request):
       LBPM_input_file += '   endpoint_threshold = 0.1'+"\n"
    LBPM_input_file += "}\n"
    print(LBPM_input_file)
-   write_input_database(input_db,LBPM_input_file)
+   create_input_database(color_db,LBPM_input_file)
+   LBPM_input_file = read_input_database(domain_db)
+   LBPM_input_file += read_input_database(color_db)
+   create_input_database(input_db,LBPM_input_file)
    LBPM_input_file = read_input_database(input_db)
    #imageFile.save()
    #Nx = form(request.POST['Nx'])
@@ -332,9 +330,80 @@ def get_color_with_domain(request):
    print("Get color data")
    input_filename=request.POST.get('domain',"got nothing")
    print(input_filename)
-   #input_db = forms.FilePathField(path=input_filename)
-   #form.fields['inputfile'].widget = forms.HiddenInput()
-   #initial={'inputfile':input_filename}
+   domain_db = input_filename+".domain"
+   color_db = input_filename+".color"
+
+   #value_count = 3
+   #ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('voxel_class','value','affinity'),extra=value_count)
+   ImageLabelFormSet = modelformset_factory(VoxelLabel, fields=('voxel_class','value','affinity'))
+   formset=ImageLabelFormSet(request.POST,prefix='form')
+   value_count = 0
+   component_count = 0
+   ReadValues = []
+   WriteValues = []
+   ComponentAffinity = []
+   ComponentLabels = []
+   solid_label = 128
+   fluid_label = 1
+   for form in formset:
+      label_value = form['value'].value()
+      label_class = form['voxel_class'].value()
+      label_affinity = form['affinity'].value()
+      value_count = value_count+1
+      ReadValues = np.append(ReadValues,label_value)     
+      if label_class == "G":
+         WriteValues = np.append(WriteValues,fluid_label)
+         fluid_label = fluid_label+1
+      elif label_class == "N":
+         WriteValues = np.append(WriteValues,fluid_label)
+         fluid_label = fluid_label+1
+      elif label_class == "W":
+         fluid_label = 2
+         WriteValues = np.append(WriteValues,fluid_label)
+      else :
+         #label_class == "S" or "M"
+         component_count = component_count + 1
+         WriteValues = np.append(WriteValues,solid_label)
+         ComponentLabels = np.append(ComponentLabels,solid_label)
+         ComponentAffinity = np.append(ComponentAffinity,label_affinity)
+         solid_label = solid_label + 1
+         
+      print(form['value'].value())
+      print(form['voxel_class'].value())
+      print(form['affinity'].value())
+
+   WriteValueString = "   WriteValues = "
+   ReadValueString = "   ReadValues = "
+   LabelString = "   ComponentLabels = "
+   AffinityString = "   ComponentAffinity = "
+   for idx in range(value_count):
+      value = int(WriteValues[idx])
+      WriteValueString += str(value)+", " 
+      value = int(ReadValues[idx])
+      ReadValueString += str(value)+", "
+
+   for idx in range(component_count):
+      value = int(ComponentLabels[idx])
+      LabelString += str(value)+", " 
+      value = float(ComponentAffinity[idx])
+      AffinityString += str(value)+", " 
+   
+   print(ReadValueString)
+   print(WriteValueString)
+   print(LabelString)
+   print(AffinityString)
+
+   LBPM_domain_file = read_input_database(domain_db)
+   LBPM_domain_file += "   // key values set by image labeling \n"
+   LBPM_domain_file += ReadValueString + "\n"
+   LBPM_domain_file += WriteValueString + "\n"
+   
+   LBPM_color_file = "Color {\n"
+   LBPM_color_file += LabelString + "\n"
+   LBPM_color_file += AffinityString + "\n"
+   LBPM_color_file += '   WettingConvention = "SCAL"'+"\n"
+   create_input_database(color_db,LBPM_color_file)
+
    form = ColorForm()
    return render(request, 'LBPM/color.html', {'form': form, 'inputfile':input_filename})
 

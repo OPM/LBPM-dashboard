@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from matplotlib.figure import Figure
 import matplotlib.pylab as plt
@@ -18,6 +19,9 @@ def read_input_database(filename):
    infile = open(filename,'r')
    content = infile.read()
    return content
+
+def generate_upload_path(instance, filename):
+   return os.path.join('simulation/%s/' % instance.id, filename)
 
 def view_slice(request):
    response = HttpResponse(content_type = 'image/png')
@@ -43,7 +47,6 @@ def view_slice(request):
    plt.axis('equal')
    plt.savefig(response)
    return response
-
 
 def domain_decomp(Nx, Ny, Nz, nprocs):
     nprocx = 1
