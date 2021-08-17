@@ -37,7 +37,7 @@ class ColorForm(forms.Form):
     capillary_number = forms.FloatField(label=mark_safe('<br /> <br /> Capillary Number'),max_value=1.0,min_value=1.0e-6)
     viscosity_ratio = forms.FloatField(label=mark_safe('<br /> <br />Viscosity Ratio'),min_value=0.01,max_value=100.0)
     density_ratio = forms.FloatField(label=mark_safe('<br /> <br />Density Ratio'),min_value=0.01,max_value=100.0)
-    interfacial_tension = forms.FloatField(label=mark_safe('<br /> <br /> Interfacial Tension'),max_value=0.06,min_value=0.0)
+    interfacial_tension = forms.FloatField(label=mark_safe('<br /> <br /> Interfacial Tension'),min_value=0.0)
     ift_units = forms.CharField(label=mark_safe('units'), widget=forms.Select(choices=IFT_UNITS))
     
     def clean_color_data(self):
