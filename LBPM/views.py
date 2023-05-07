@@ -17,6 +17,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pylab as plt
+from matplotlib.lines import Line2D
 
 def index(request):
    return get_color(request)
@@ -84,14 +85,27 @@ def preview_image(request, SimPath):
    slice_at_x = int(Nx/2)
    read_values = np.unique(ID)
    value_count = read_values.size
-   cmap = matplotlib.cm.get_cmap("hot", value_count)
+   color_map=matplotlib.colormaps.get_cmap('flag_r')
+   custom_lines = []
+   value_list = []
+   idx=0
+   for i in read_values: 
+      print(i)
+      line=Line2D([0], [0], color=color_map(read_values[idx]), lw=10)
+      custom_lines.append(line)
+      value_list.append(read_values[idx])
+      idx += 1
+   
+   #cmap = matplotlib.cm.get_cmap("flag_r", value_count)
+   #cmap = matplotlib.cm.get_cmap("flag_r")
 
    plt.figure(1)
    plt.title(str(imageFile))
-   plt.pcolormesh(ID[:,:,slice_at_x],cmap=cmap)
-   cbar=plt.colorbar()
-   cbar.set_ticks(read_values)
-   cbar.set_ticklabels(read_values)
+   plt.pcolormesh(ID[:,:,slice_at_x],cmap=color_map)
+   #cbar=plt.colorbar()
+   #cbar.set_ticks(read_values)
+   #cbar.set_ticklabels(read_values)
+   plt.legend(custom_lines, value_list)
    plt.grid(True)
    plt.axis('equal')
    plt.savefig(slice_file)

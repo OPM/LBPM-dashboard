@@ -16,8 +16,7 @@ Steps to set up local web server
 2. Apply migrations to create initial database
 
   python manage.py makemigrations
-
-  python manage.py migrate
+  python manage.py migrate --run-syncdb
 
 NOTE: sometimes the command below is helpful if testing the database
 
@@ -35,5 +34,11 @@ NOTE: sometimes the command below is helpful if testing the database
 
   python manage.py runserver
 
+5. Log into the admin site and create a user account (e.g. 'lbpm_user')
 
+http://127.0.0.1:8000/admin/
+
+6. Log into the account from
+
+http://127.0.0.1:8000/accounts/login/
 

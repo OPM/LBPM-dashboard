@@ -18,14 +18,17 @@ from django.contrib import admin
 from django.urls import path, include
 #from django.conf.urls import include, url
 from django.conf import settings
+#from django.urls import re_path
+#from django.views.static import serve
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('project/', include('upload.urls')),
     path('LBPM/', include('LBPM.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('admin/', admin.site.urls)    
+    path('admin/', admin.site.urls),
+    #re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT})
     #path('media/','django.views.static.serve','media'),
     #url(r'^media/$',media,name='media'),
- ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+ ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
