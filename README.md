@@ -34,11 +34,15 @@ NOTE: sometimes the command below is helpful if testing the database
 
   python manage.py runserver
 
-5. Log into the admin site and create a user account (e.g. 'lbpm_user')
+5. Access the image workflow for color model
+
+http://127.0.0.1:8000/LBPM/image
+
+6. Log into the admin site and create a user account (e.g. 'lbpm_user')
 
 http://127.0.0.1:8000/admin/
 
-6. Log into the account from
+7. Log into the account from
 
 http://127.0.0.1:8000/accounts/login/
 
