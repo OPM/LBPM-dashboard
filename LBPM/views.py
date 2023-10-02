@@ -43,7 +43,7 @@ def preview_slice(request, SimPath):
    slice_at_x = int(Nx/2)
    plt.figure(1)
    plt.title(str(imageFile))
-   plt.pcolormesh(ID[:,:,slice_at_x],cmap='hot')
+   plt.pcolormesh(ID[:,:,slice_at_x],cmap='flag_r')
    plt.grid(True)
    plt.axis('equal')
    plt.savefig(response)
@@ -85,7 +85,7 @@ def preview_image(request, SimPath):
    slice_at_x = int(Nx/2)
    read_values = np.unique(ID)
    value_count = read_values.size
-   color_map=matplotlib.colormaps.get_cmap('flag_r')
+   color_map=matplotlib.cm.get_cmap('flag_r', value_count)
    custom_lines = []
    value_list = []
    idx=0
@@ -133,14 +133,6 @@ def preview_image(request, SimPath):
    LBPM_input_file += "   n = "+str(int(nx))+", "+str(int(ny))+", "+str(int(nz))+"\n"
    LBPM_input_file += "   nproc = "+str(int(npx))+", "+str(int(npy))+", "+str(int(npz))+"\n"  
    LBPM_input_file += '   ReadType ="8bit"'+"\n"
-   LBPM_input_file += "   ReadValues = "
-   for value in read_values :
-      LBPM_input_file +=   str(value) + ", "
-   LBPM_input_file += "\n"
-   LBPM_input_file += "   WriteValues = "
-   for value in read_values :
-      LBPM_input_file +=   str(value) + ", "
-   LBPM_input_file += "\n"
    create_input_database(domain_db,LBPM_input_file)
    return render(request, 'LBPM/preview.html', {'inputfile':input_db, 'slice':relative_path, 'formset':formset})
 
@@ -204,6 +196,7 @@ def simulation(request):
       Fz = 1.0e-5
 
    LBPM_domain_file = read_input_database(domain_db)
+   #LBPM_domain_file += WriteValueString + "\n"
    LBPM_domain_file += "   // keys below set by color model\n"
    LBPM_domain_file += '   BC = '+str(BC)+"\n"
    if protocol == "Steady-state relperm" :
@@ -232,6 +225,8 @@ def simulation(request):
    LBPM_input_file += '   alpha = '+str(alpha)+"\n"
    LBPM_input_file += '   beta = '+str(beta)+"\n"
    LBPM_input_file += "   F = "+str(Fx)+", "+str(Fy)+", "+str(Fz)+"\n"
+   if protocol == "Steady-state relperm" :
+      LBPM_input_file += '   capillary_number = '+str(capillary_number)+"\n"
    if protocol == "Core flooding" :
       LBPM_input_file += "   flux = "+str(flux)+"\n"
    LBPM_input_file += "}\n"
@@ -376,6 +371,7 @@ def get_color_with_domain(request):
          WriteValues = np.append(WriteValues,fluid_label)
       else :
          #label_class == "S" or "M"
+         print("Solid label \n")
          component_count = component_count + 1
          WriteValues = np.append(WriteValues,solid_label)
          ComponentLabels = np.append(ComponentLabels,solid_label)
@@ -411,7 +407,8 @@ def get_color_with_domain(request):
    LBPM_domain_file += "   // key values set by image labeling \n"
    LBPM_domain_file += ReadValueString + "\n"
    LBPM_domain_file += WriteValueString + "\n"
-   
+   create_input_database(domain_db,LBPM_domain_file)
+
    LBPM_color_file = "Color {\n"
    LBPM_color_file += LabelString + "\n"
    LBPM_color_file += AffinityString + "\n"
@@ -419,8 +416,8 @@ def get_color_with_domain(request):
    create_input_database(color_db,LBPM_color_file)
 
    form = ColorForm()
-   return render(request, 'LBPM/color.html', {'form': form, 'inputfile':input_filename})
-
+   return render(request, 'LBPM/color.html', {'form': form, 'inputfile':input_filename, 'write_values':WriteValueString})
+                 
 def show_color(request):
    return render(request)
     
